@@ -61,7 +61,7 @@ public class initData {
             initParkingLotsData();
             initVehicleData();
         } catch (Exception e) {
-            System.err.println("Error during initialization: " + e.getMessage());
+            System.err.println("Error during initializations: " + e.getMessage());
             e.printStackTrace();
         }
     }
