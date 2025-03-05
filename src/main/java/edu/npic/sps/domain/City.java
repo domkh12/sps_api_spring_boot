@@ -1,10 +1,10 @@
 package edu.npic.sps.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.List;
 
 @Getter
@@ -12,13 +12,17 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "cities")
-public class City {
+public class City implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 6527855645691638321L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String uuid;
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
 //    relationship

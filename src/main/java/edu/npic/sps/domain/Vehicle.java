@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "vehicles")
+@ToString
 public class Vehicle {
 
     @Id
@@ -24,14 +26,9 @@ public class Vehicle {
     private String numberPlate;
 
     // optional
-    @Column(length = 200)
-    private String licensePlateKhName;
-    @Column(length = 200)
-    private String licensePlateEngName;
     private String color;
     private String vehicleModel;
     private String vehicleMake;
-    private String vehicleDescription;
     private String image;
 
     //system generated
@@ -39,7 +36,7 @@ public class Vehicle {
     private Boolean isDeleted;
 
     // relationship
-    @OneToMany(mappedBy = "vehicle")
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.REMOVE)
     private List<ParkingLotDetail> parkingLotDetail;
 
     @ManyToOne
@@ -53,5 +50,11 @@ public class Vehicle {
             inverseJoinColumns = @JoinColumn(name = "site_id", referencedColumnName = "id")
     )
     private List<Site> sites;
+
+    @ManyToOne
+    private LicensePlateType licensePlateType;
+
+    @ManyToOne
+    private LicensePlateProvince licensePlateProvince;
 
 }

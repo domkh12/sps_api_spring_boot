@@ -1,6 +1,7 @@
 package edu.npic.sps.features.site;
 
 import edu.npic.sps.features.site.dto.CreateSite;
+import edu.npic.sps.features.site.dto.SiteRequest;
 import edu.npic.sps.features.site.dto.SiteResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,32 @@ public class SiteController {
     private final SiteService siteService;
 
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @GetMapping("/filter")
+    @ResponseStatus(HttpStatus.OK)
+    Page<SiteResponse> filter(@RequestParam(required = false, defaultValue = "1") int pageNo,
+                        @RequestParam(required = false, defaultValue = "20") int pageSize,
+                        @RequestParam(required = false, defaultValue = "") String keywords,
+                        @RequestParam(required = false, defaultValue = "") String cityId,
+                        @RequestParam(required = false, defaultValue = "") String siteTypeId,
+                        @RequestParam(required = false, defaultValue = "") String companyId) {
+        return siteService.filter(pageNo, pageSize, keywords, cityId, siteTypeId, companyId);
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @DeleteMapping("/{uuid}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void delete(@PathVariable String uuid){
+        siteService.delete(uuid);
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PatchMapping("/{uuid}")
+    @ResponseStatus(HttpStatus.CREATED)
+    SiteResponse update(@PathVariable String uuid, @RequestBody @Valid SiteRequest siteRequest){
+        return siteService.update(uuid, siteRequest);
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     SiteResponse createSite(@Valid @RequestBody CreateSite createSite){
@@ -32,14 +59,13 @@ public class SiteController {
         return siteService.findAllByUserRole();
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     Page<SiteResponse> findAll(
             @RequestParam(required = false, defaultValue = "1") int pageNo,
-            @RequestParam(required = false, defaultValue = "20") int pageSize,
-            @RequestParam(required = false, defaultValue = "") String searchTerm ){
-        return siteService.findAll(pageNo, pageSize, searchTerm);
+            @RequestParam(required = false, defaultValue = "20") int pageSize ){
+        return siteService.findAll(pageNo, pageSize);
     }
 
 }

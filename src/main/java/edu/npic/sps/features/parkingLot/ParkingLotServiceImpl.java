@@ -2,9 +2,13 @@ package edu.npic.sps.features.parkingLot;
 
 import edu.npic.sps.domain.ParkingLot;
 import edu.npic.sps.domain.ParkingLotDetail;
+import edu.npic.sps.domain.ParkingSpace;
+import edu.npic.sps.features.parkingLot.dto.CreateParkingLot;
+import edu.npic.sps.features.parkingLot.dto.ParkingLotRequest;
 import edu.npic.sps.features.parkingLot.dto.ParkingLotResponse;
 import edu.npic.sps.features.parkingLotDetail.ParkingLotDetailRepository;
 import edu.npic.sps.features.parkingLot.dto.ParkingSlotDetailResponse;
+import edu.npic.sps.features.parkingSpace.ParkingSpaceRepository;
 import edu.npic.sps.mapper.ParkingLotMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,15 +19,76 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class ParkingLotServiceImpl implements ParkingLotService {
-
     private final ParkingLotRepository parkingLotRepository;
+
     private final ParkingLotMapper parkingLotMapper;
     private final ParkingLotDetailRepository parkingLotDetailRepository;
     private final SimpMessagingTemplate simpMessageTemplate;
+    private final ParkingSpaceRepository parkingSpaceRepository;
 
+    @Override
+    public List<ParkingLotResponse> update(String uuid, ParkingLotRequest parkingLotRequest) {
+
+        ParkingLot parkingLot = parkingLotRepository.findByUuid(uuid).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking lot not found!")
+        );
+
+        ParkingSpace parkingSpace = parkingSpaceRepository.findByUuid(parkingLotRequest.parkingSpaceUuid()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking space not found!")
+        );
+
+        List<ParkingLot> parkingLotList =parkingLotRequest.lotName().stream().map(
+                lot -> {
+                    ParkingLot newParkingLot = new ParkingLot();
+                    newParkingLot.setUuid(UUID.randomUUID().toString());
+                    newParkingLot.setCreatedAt(LocalDateTime.now());
+                    newParkingLot.setIsAvailable(true);
+                    parkingLot.setLotName(lot);
+                    parkingLot.setParkingSpace(parkingSpace);
+                    parkingSpace.setLotQty(parkingSpace.getLotQty() + 1);
+                    parkingSpace.setEmpty(parkingSpace.getEmpty() + 1);
+                    parkingSpaceRepository.save(parkingSpace);
+                    parkingLotRepository.save(parkingLot);
+                    return parkingLot;
+                }
+        ).toList();
+
+        return parkingLotList.stream().map(parkingLotMapper::toParkingSlotResponse).toList();
+    }
+
+    @Override
+    public List<ParkingLotResponse> create(CreateParkingLot createParkingLot) {
+
+        ParkingSpace parkingSpace = parkingSpaceRepository.findByUuid(createParkingLot.parkingSpaceUuid()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking space not found!")
+        );
+
+        List<ParkingLot> parkingLotList =createParkingLot.lotName().stream().map(
+                lot -> {
+                    ParkingLot parkingLot = new ParkingLot();
+                    parkingLot.setUuid(UUID.randomUUID().toString());
+                    parkingLot.setCreatedAt(LocalDateTime.now());
+                    parkingLot.setIsAvailable(true);
+                    parkingLot.setLotName(lot);
+                    parkingLot.setParkingSpace(parkingSpace);
+                    parkingSpace.setLotQty(parkingSpace.getLotQty() + 1);
+                    parkingSpace.setEmpty(parkingSpace.getEmpty() + 1);
+                    parkingSpaceRepository.save(parkingSpace);
+                    parkingLotRepository.save(parkingLot);
+                    return parkingLot;
+                }
+        ).toList();
+
+        return parkingLotList.stream().map(parkingLotMapper::toParkingSlotResponse).toList();
+    }
     @Override
     public Page<ParkingSlotDetailResponse> findAll(int pageNo, int pageSize) {
 
@@ -40,7 +105,6 @@ public class ParkingLotServiceImpl implements ParkingLotService {
         return parkingSlotPage.map(parkingLotMapper::toParkingSlotDetailResponse);
 
     }
-
 //    @Override
 //    public void createCarParking(CreateCarParking createCarParking) {
 //
@@ -75,7 +139,9 @@ public class ParkingLotServiceImpl implements ParkingLotService {
 //                        .isAvailable(parkingSlot.getIsAvailable())
 //                        .build()
 //        );
+
 //
+
 //    }
 
     @Override

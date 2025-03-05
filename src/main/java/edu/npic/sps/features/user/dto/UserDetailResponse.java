@@ -4,6 +4,7 @@ import edu.npic.sps.features.gender.dto.GenderResponse;
 import edu.npic.sps.features.role.dto.RoleResponse;
 import edu.npic.sps.features.site.dto.SiteResponse;
 import lombok.Builder;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,6 +26,8 @@ public record UserDetailResponse(
         Boolean isOnline,
         String status,
         List<SiteResponse> sites,
-        GenderResponse gender
+        GenderResponse gender,
+        Boolean isVerified,
+        Boolean isDeleted
 ) {
 }

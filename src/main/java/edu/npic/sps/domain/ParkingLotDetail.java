@@ -18,7 +18,6 @@ public class ParkingLotDetail {
     private Integer id;
     @Column(unique = true, nullable = false)
     private String uuid;
-    private Boolean isDeleted;
     private LocalDateTime createdAt;
     @Column(nullable = false, length = 100)
     private LocalDateTime timeIn;
@@ -26,6 +25,7 @@ public class ParkingLotDetail {
     private LocalDateTime timeOut;
     @Column(nullable = false, length = 100)
     private Boolean isParking;
+    private Long durationHours;
 
     // relationship
     @ManyToOne

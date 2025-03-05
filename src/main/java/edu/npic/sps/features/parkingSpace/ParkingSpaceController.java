@@ -1,7 +1,10 @@
 package edu.npic.sps.features.parkingSpace;
 
+import edu.npic.sps.features.parkingSpace.dto.CreateParkingSpace;
 import edu.npic.sps.features.parkingSpace.dto.LabelResponse;
+import edu.npic.sps.features.parkingSpace.dto.ParkingSpaceRequest;
 import edu.npic.sps.features.parkingSpace.dto.ParkingSpaceResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -17,6 +20,24 @@ public class ParkingSpaceController {
 
     private final ParkingSpaceService parkingSpaceService;
 
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @GetMapping("/filters")
+    @ResponseStatus(HttpStatus.OK)
+    Page<ParkingSpaceResponse> filter(@RequestParam(required = false, defaultValue = "1") int pageNo,
+                                      @RequestParam(required = false, defaultValue = "20") int pageSize,
+                                      @RequestParam(required = false, defaultValue = "") String branchUuid,
+                                      @RequestParam(required = false, defaultValue = "") String keywords
+    ){
+        return parkingSpaceService.filter(pageNo, pageSize, branchUuid, keywords);
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PatchMapping("/{uuid}")
+    @ResponseStatus(HttpStatus.CREATED)
+    ParkingSpaceResponse update(@PathVariable String uuid, @RequestBody ParkingSpaceRequest parkingSpaceRequest){
+        return parkingSpaceService.update(uuid, parkingSpaceRequest);
+    }
+
     @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_USER')")
     @GetMapping("/labels")
     List<LabelResponse> getAllLabels() {
@@ -28,26 +49,26 @@ public class ParkingSpaceController {
     ParkingSpaceResponse findByUuid(@PathVariable String uuid) {
         return parkingSpaceService.findByUuid(uuid);
     }
-//
-////    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-//    @PostMapping
-//    @ResponseStatus(HttpStatus.CREATED)
-//    void createNew(@Valid @RequestBody CreateParking createParking) {
-//        parkingSpaceService.createNew(createParking);
-//    }
-//
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_USER')")
+
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @GetMapping
-    Page<ParkingSpaceResponse> getAll(@RequestParam(required = false, defaultValue = "1") int pageNo,
-                                      @RequestParam(required = false, defaultValue = "20") int pageSize){
-        return parkingSpaceService.getAll(pageNo,pageSize);
+    ParkingSpaceResponse create(@Valid @RequestBody CreateParkingSpace createParkingSpace) {
+       return parkingSpaceService.create(createParkingSpace);
     }
-//
-//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
-//    @DeleteMapping("/{uuid}")
-//    void delete(@PathVariable String uuid){
-//        parkingSpaceService.delete(uuid);
-//    }
+
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @DeleteMapping("/{uuid}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void delete(@PathVariable String uuid) {
+         parkingSpaceService.delete(uuid);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_USER')")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping
+    Page<ParkingSpaceResponse> findAll(@RequestParam(required = false, defaultValue = "1") int pageNo,
+                                      @RequestParam(required = false, defaultValue = "20") int pageSize){
+        return parkingSpaceService.findAll(pageNo,pageSize);
+    }
 }

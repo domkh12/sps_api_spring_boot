@@ -92,8 +92,20 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public List<FullNameResponse> findAllFullName() {
-       Sort sort = Sort.by(Sort.Direction.DESC, "id");
-        List<User> user = userRepository.findAll(sort);
+
+        String loggedUserUuid = authUtil.loggedUserUuid();
+        boolean isManager = authUtil.isManagerLoggedUser();
+        boolean isAdmin =  authUtil.isAdminLoggedUser();
+        List<String> verifiedUuid = authUtil.loggedUserSites();
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        List<User> user = new ArrayList<>();
+
+        if (isManager) {
+            user = userRepository.findAll(sort);
+        }else if(isAdmin) {
+            user = userRepository.findAllFullNameBySite(loggedUserUuid ,verifiedUuid.stream().findFirst().orElseThrow());
+        }
+
         return userMapper.toFullNameResponse(user);
     }
 
@@ -209,18 +221,31 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public void deleteByUuid(String uuid) {
-        User user = userRepository.findByUuid(uuid).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "User not found")
-        );
+        boolean isManager = authUtil.isManagerLoggedUser();
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        List<String> sitesLogged = authUtil.loggedUserSites();
 
-        user.setIsDeleted(true);
+        if (isManager){
+            User user = userRepository.findByUuid(uuid).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
+            );
 
-        userRepository.save(user);
+            if (emailVerificationRepository.existsByUser(user)){
+                EmailVerification emailVerification = emailVerificationRepository.findByUser(user).orElseThrow();
+                emailVerification.setUser(null);
+            }
+
+            userRepository.delete(user);
+        }
+
     }
 
     @Override
-    public UserDetailResponse updateUser(String uuid, UpdateUserRequest updateUserRequest) throws IOException {
+    public UserDetailResponse updateUser(String uuid, UpdateUserRequest updateUserRequest) throws IOException, MessagingException {
+
+        boolean isManager = authUtil.isManagerLoggedUser();
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        List<String> sitesLogged = authUtil.loggedUserSites();
 
         User user = userRepository.findByUuid(uuid).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -235,55 +260,78 @@ public class UserServiceImpl implements UserService{
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Phone number already exists");
         }
 
-        if (updateUserRequest.profileImage() != null) {
-            deleteImageFile(user.getProfileImage());
-        } else if (updateUserRequest.bannerImage() != null) {
-            deleteImageFile(user.getBannerImage());
-        }
-
-
-        if (updateUserRequest.roleId() != null) {
-            List<Role> newRoles = updateUserRequest.roleId().stream()
-                    .map(roleUuid -> roleRepository.findByUuid(roleUuid)
-                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found!")))
-                    .toList();
-            // Get the user's existing roles (if any)
-            List<Role> existingRoles = user.getRoles();
-
-            if(existingRoles != null) {
-                //Update the existing collection of roles
-                existingRoles.clear();
-                existingRoles.addAll(newRoles);
-            } else {
-                user.setRoles(newRoles);
+        if(isManager){
+            if (updateUserRequest.profileImage() != null) {
+                deleteImageFile(user.getProfileImage());
+            } else if (updateUserRequest.bannerImage() != null) {
+                deleteImageFile(user.getBannerImage());
             }
 
-        }
 
-        if (updateUserRequest.genderId() != null) {
-            Gender gender = genderRepository.findByUuid(updateUserRequest.genderId()).orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Gender not found!"
-            ));
-            user.setGender(gender);
-        }
+            if (updateUserRequest.roleId() != null) {
+                List<Role> newRoles = updateUserRequest.roleId().stream()
+                        .map(roleUuid -> roleRepository.findByUuid(roleUuid)
+                                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found!")))
+                        .toList();
+                // Get the user's existing roles (if any)
+                List<Role> existingRoles = user.getRoles();
 
-        if (updateUserRequest.branchId() != null) {
-            List<Site> newSites = updateUserRequest.branchId().stream()
-                    .map(siteUuid -> siteRepository.findByUuid(siteUuid)
-                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Site not found!"))
-                    ).toList();
+                if(existingRoles != null) {
+                    //Update the existing collection of roles
+                    existingRoles.clear();
+                    existingRoles.addAll(newRoles);
+                } else {
+                    user.setRoles(newRoles);
+                }
 
-            List<Site> existingSites = user.getSites();
-            if(existingSites != null) {
-                existingSites.clear();
-                existingSites.addAll(newSites);
-            } else {
-                user.setSites(newSites);
             }
+
+            if (updateUserRequest.genderId() != null) {
+                Gender gender = genderRepository.findByUuid(updateUserRequest.genderId()).orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Gender not found!"
+                ));
+                user.setGender(gender);
+            }
+
+            if (updateUserRequest.branchId() != null) {
+                List<Site> newSites = updateUserRequest.branchId().stream()
+                        .map(siteUuid -> siteRepository.findByUuid(siteUuid)
+                                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Site not found!"))
+                        ).toList();
+
+                List<Site> existingSites = user.getSites();
+                if(existingSites != null) {
+                    existingSites.clear();
+                    existingSites.addAll(newSites);
+                } else {
+                    user.setSites(newSites);
+                }
+            }
+
+            if (updateUserRequest.isDeleted() != null){
+                if (!updateUserRequest.isDeleted()){
+                    user.setStatus(String.valueOf(Status.Active));
+
+                }else{
+                    user.setStatus(String.valueOf(Status.Banned));
+                }
+            }
+
+            if (updateUserRequest.isVerified() != null){
+                if (!updateUserRequest.isVerified()){
+                    user.setStatus(String.valueOf(Status.Pending));
+
+                    if (emailVerificationRepository.existsByUser(user)){
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "User not verify yet!");
+                    }else {
+                        sendEmailVerification(user, 15);
+                    }
+                }
+            }
+            userMapper.fromUpdateUserRequest(updateUserRequest, user);
+            userRepository.save(user);
         }
 
-        userMapper.fromUpdateUserRequest(updateUserRequest, user);
-        userRepository.save(user);
 
         return userMapper.toUserDetailResponse(user);
     }
@@ -340,29 +388,7 @@ public class UserServiceImpl implements UserService{
         userRepository.save(user);
 
         if (!createUser.isVerified()){
-            EmailVerification emailVerification = new EmailVerification();
-            emailVerification.setEmail(user.getEmail());
-            emailVerification.setExpiryTime(LocalTime.now().plusMinutes(1));
-            emailVerification.setUser(user);
-            emailVerification.setVerificationCode(RandomOtp.generateSecurityCode());
-            emailVerification.setToken(RandomUtil.randomUuidToken());
-            emailVerificationRepository.save(emailVerification);
-
-            String verifyUrl = backendUrl + "/verify?token=" + emailVerification.getToken();
-            Context context = new Context();
-            context.setVariable("email", emailVerification.getEmail());
-            context.setVariable("expire", emailVerification.getExpiryTime());
-            context.setVariable("tokenUrl", verifyUrl);
-            String htmlContent = templateEngine.process("emailTemplate", context);
-
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
-            helper.setSubject("Email Verification - SPS");
-            helper.setTo(user.getEmail());
-            helper.setFrom(adminMail);
-            helper.setText(htmlContent, true);
-
-            mailSender.send(mimeMessage);
+            sendEmailVerification(user, 30);
         }
 
         }else if (isAdmin){
@@ -394,29 +420,29 @@ public class UserServiceImpl implements UserService{
             userRepository.save(user);
 
             if (!createUser.isVerified()){
-                EmailVerification emailVerification = new EmailVerification();
-                emailVerification.setEmail(user.getEmail());
-                emailVerification.setExpiryTime(LocalTime.now().plusMinutes(1));
-                emailVerification.setUser(user);
-                emailVerification.setVerificationCode(RandomOtp.generateSecurityCode());
-                emailVerification.setToken(RandomUtil.randomUuidToken());
-                emailVerificationRepository.save(emailVerification);
-
-                String verifyUrl = backendUrl + "/verify?token=" + emailVerification.getToken();
-                Context context = new Context();
-                context.setVariable("email", emailVerification.getEmail());
-                context.setVariable("expire", emailVerification.getExpiryTime());
-                context.setVariable("tokenUrl", verifyUrl);
-                String htmlContent = templateEngine.process("emailTemplate", context);
-
-                MimeMessage mimeMessage = mailSender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
-                helper.setSubject("Email Verification - SPS");
-                helper.setTo(user.getEmail());
-                helper.setFrom(adminMail);
-                helper.setText(htmlContent, true);
-
-                mailSender.send(mimeMessage);
+//                EmailVerification emailVerification = new EmailVerification();
+//                emailVerification.setEmail(user.getEmail());
+//                emailVerification.setExpiryTime(LocalTime.now().plusMinutes(1));
+//                emailVerification.setUser(user);
+//                emailVerification.setVerificationCode(RandomOtp.generateSecurityCode());
+//                emailVerification.setToken(RandomUtil.randomUuidToken());
+//                emailVerificationRepository.save(emailVerification);
+//
+//                String verifyUrl = backendUrl + "/verify?token=" + emailVerification.getToken();
+//                Context context = new Context();
+//                context.setVariable("email", emailVerification.getEmail());
+//                context.setVariable("expire", emailVerification.getExpiryTime());
+//                context.setVariable("tokenUrl", verifyUrl);
+//                String htmlContent = templateEngine.process("emailTemplate", context);
+//
+//                MimeMessage mimeMessage = mailSender.createMimeMessage();
+//                MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
+//                helper.setSubject("Email Verification - SPS");
+//                helper.setTo(user.getEmail());
+//                helper.setFrom(adminMail);
+//                helper.setText(htmlContent, true);
+//
+//                mailSender.send(mimeMessage);
             }
         }
     }
@@ -426,7 +452,7 @@ public class UserServiceImpl implements UserService{
         String loggedUserUuid = authUtil.loggedUserUuid();
         boolean isManager = authUtil.isManagerLoggedUser();
         boolean isAdmin =  authUtil.isAdminLoggedUser();
-        List<String> verifiedUuid = authUtil.loggedUserSites();
+        List<String> sites = authUtil.loggedUserSites();
 
         if (pageNo < 1 || pageSize < 1) {
             throw new ResponseStatusException(
@@ -449,8 +475,11 @@ public class UserServiceImpl implements UserService{
             else if(isAdmin){
                     users = userRepository.findUserByRoleAdmin(
                             loggedUserUuid ,
-                            verifiedUuid.stream().findFirst().orElseThrow(),
+                            sites.stream().findFirst().orElseThrow(),
                             pageRequest);
+                statusCount.put("Active", userRepository.countActiveUserBySite(loggedUserUuid, sites.stream().findFirst().orElseThrow()));
+                statusCount.put("Pending", userRepository.countPendingUserBySite(sites.stream().findFirst().orElseThrow()));
+                statusCount.put("Banned", userRepository.countBannedUserBySite(sites.stream().findFirst().orElseThrow()));
             }
 
 
@@ -565,6 +594,32 @@ public class UserServiceImpl implements UserService{
             Path path = Path.of(serverPath + fileName);
             Files.deleteIfExists(path);
         }
+    }
+
+    private void sendEmailVerification(User user, Integer expireMinute) throws MessagingException {
+//        EmailVerification emailVerification = new EmailVerification();
+//        emailVerification.setEmail(user.getEmail());
+//        emailVerification.setExpiryTime(LocalTime.now().plusMinutes(expireMinute));
+//        emailVerification.setUser(user);
+//        emailVerification.setVerificationCode(RandomOtp.generateSecurityCode());
+//        emailVerification.setToken(RandomUtil.randomUuidToken());
+//        emailVerificationRepository.save(emailVerification);
+//
+//        String verifyUrl = backendUrl + "/verify?token=" + emailVerification.getToken();
+//        Context context = new Context();
+//        context.setVariable("email", emailVerification.getEmail());
+//        context.setVariable("expire", emailVerification.getExpiryTime());
+//        context.setVariable("tokenUrl", verifyUrl);
+//        String htmlContent = templateEngine.process("emailTemplate", context);
+//
+//        MimeMessage mimeMessage = mailSender.createMimeMessage();
+//        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
+//        helper.setSubject("Email Verification - SPS");
+//        helper.setTo(user.getEmail());
+//        helper.setFrom(adminMail);
+//        helper.setText(htmlContent, true);
+//
+//        mailSender.send(mimeMessage);
     }
 
 }

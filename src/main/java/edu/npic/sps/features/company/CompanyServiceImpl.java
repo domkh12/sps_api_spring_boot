@@ -8,7 +8,9 @@ import edu.npic.sps.features.siteType.SiteTypeRepository;
 import edu.npic.sps.features.site.SiteRepository;
 import edu.npic.sps.mapper.CompanyMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -39,6 +41,15 @@ public class CompanyServiceImpl implements CompanyService{
         return companyList.stream().map(
                 company -> companyMapper.toCompanyNameResponse(company)
         ).toList();
+    }
+
+    @Override
+    public void delete(String uuid) {
+        Company company = companyRepository.findByUuid(uuid).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found!")
+        );
+
+        companyRepository.delete(company);
     }
 
 }

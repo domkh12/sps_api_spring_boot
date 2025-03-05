@@ -23,7 +23,7 @@ public class TotpServiceImpl implements TotpService{
 
     @Override
     public String getQrCodeUrl(GoogleAuthenticatorKey secret, String email){
-        return GoogleAuthenticatorQRGenerator.getOtpAuthURL("SPS", email, secret);
+        return GoogleAuthenticatorQRGenerator.getOtpAuthURL("SPS-NPIC", email, secret);
     }
 
     @Override

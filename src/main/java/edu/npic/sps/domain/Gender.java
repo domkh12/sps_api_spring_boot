@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.List;
 
 @Setter
@@ -12,7 +14,11 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "genders")
-public class Gender {
+public class Gender implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 6527855645691638321L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

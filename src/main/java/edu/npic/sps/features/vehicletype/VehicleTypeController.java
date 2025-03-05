@@ -34,7 +34,7 @@ public class VehicleTypeController {
         vehicleTypeService.deleteByUuid(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @GetMapping
     List<VehicleTypeResponse> findAll() {

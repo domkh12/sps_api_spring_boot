@@ -4,6 +4,8 @@ import edu.npic.sps.domain.Gender;
 import edu.npic.sps.features.gender.dto.GenderResponse;
 import edu.npic.sps.mapper.GenderMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +20,6 @@ public class GenderServiceImpl implements GenderService{
     @Override
     public List<GenderResponse> findAll() {
         List<Gender> genders = genreRepository.findAll();
-        return genders.stream().map(gender -> genderMapper.toGenderResponse(gender)).toList();
+        return genders.stream().map(genderMapper::toGenderResponse).toList();
     }
 }

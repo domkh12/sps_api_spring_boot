@@ -10,12 +10,13 @@ import java.time.LocalDateTime;
 @Builder
 public record ParkingDetailResponse(
         String uuid,
-        ParkingLotResponse parkingSlot,
+        ParkingLotResponse parkingLot,
         VehicleResponse vehicle,
-        ParkingSpaceResponse parking,
+        ParkingSpaceResponse parkingSpace,
         LocalDateTime timeIn,
         LocalDateTime timeOut,
         Boolean isParking,
+        Long durationHours,
         LocalDateTime createdAt
 ) {
 }
