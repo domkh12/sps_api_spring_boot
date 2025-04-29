@@ -39,6 +39,16 @@ public class SiteServiceImpl implements SiteService{
     private final ParkingSpaceRepository parkingSpaceRepository;
 
     @Override
+    public SiteResponse findByUuid(String uuid) {
+
+        Site site = siteRepository.findByUuid(uuid).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Site not found!")
+        );
+
+        return siteMapper.toSiteResponse(site);
+    }
+
+    @Override
     public Page<SiteResponse> filter(int pageNo, int pageSize, String keywords, String cityId, String siteTypeId, String companyId) {
 
         if (pageNo < 1){
@@ -89,7 +99,7 @@ public class SiteServiceImpl implements SiteService{
         Site site = siteRepository.findByUuid(uuid).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found!")
         );
-        
+
         siteRepository.delete(site);
     }
 

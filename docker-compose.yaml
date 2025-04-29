@@ -1,17 +1,17 @@
 services:
-  smart-parking-api:
-    image: "smart-parking-api"
-    build: .
-    container_name: smart-parking-api
-    ports:
-      - 55555:8080
-    volumes:
-      - C:\NPIC\Smart_Parking_System_API\sps\file-server:/file-server/
-    networks:
-      - smart-parking-net
-    depends_on:
-      - smart-parking-system-db
-      - redis
+#  smart-parking-api:
+#    image: "smart-parking-api"
+#    build: .
+#    container_name: smart-parking-api
+#    ports:
+#      - 55555:8080
+#    volumes:
+#      - C:\NPIC\Smart_Parking_System_API\sps\file-server:/file-server/
+#    networks:
+#      - smart-parking-net
+#    depends_on:
+#      - smart-parking-system-db
+#      - redis
 
   smart-parking-system-db:
     image: postgres:16.4-alpine3.20

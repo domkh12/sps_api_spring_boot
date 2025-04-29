@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface SiteService {
 
+    SiteResponse findByUuid(String uuid);
+
     List<SiteResponse> findAllByUserRole();
 
     Page<SiteResponse> findAll(int pageNo, int pageSize);

@@ -20,6 +20,13 @@ public class SiteController {
     private final SiteService siteService;
 
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @GetMapping("/{uuid}")
+    @ResponseStatus(HttpStatus.OK)
+    SiteResponse findByUuid(@PathVariable String uuid){
+        return siteService.findByUuid(uuid);
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     @GetMapping("/filter")
     @ResponseStatus(HttpStatus.OK)
     Page<SiteResponse> filter(@RequestParam(required = false, defaultValue = "1") int pageNo,
