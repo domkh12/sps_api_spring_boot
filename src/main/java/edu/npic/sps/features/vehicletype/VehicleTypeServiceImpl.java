@@ -68,8 +68,10 @@ public class VehicleTypeServiceImpl implements VehicleTypeService{
 
     @Override
     public List<VehicleTypeResponse> findAll() {
+
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         List<VehicleType> vehicleTypeList = vehicleTypeRepository.findAll(sort);
         return vehicleTypeMapper.toListVehicleTypeResponse(vehicleTypeList);
+
     }
 }

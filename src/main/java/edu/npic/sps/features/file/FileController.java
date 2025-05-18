@@ -4,6 +4,7 @@ import edu.npic.sps.features.file.dto.FileResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,6 +19,7 @@ public class FileController {
 
     private final FileService fileService;
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_USER')")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     FileResponse uploadFile(@RequestPart MultipartFile file) throws IOException {

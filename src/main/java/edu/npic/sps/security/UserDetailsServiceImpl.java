@@ -22,6 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         );
         System.out.println(user.getEmail());
         System.out.println(user.getFullName());
+
         CustomUserDetails customUserDetails = new CustomUserDetails();
         customUserDetails.setUser(user);
         return customUserDetails;

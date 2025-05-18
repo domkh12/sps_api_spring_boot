@@ -18,7 +18,7 @@ public class SiteTypeController {
 
     private final SiteTypeService siteTypeService;
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER' ,'ROLE_ADMIN')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     List<SiteTypeResponse> findAll(){

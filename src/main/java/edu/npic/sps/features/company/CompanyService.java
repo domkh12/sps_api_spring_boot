@@ -13,4 +13,6 @@ public interface CompanyService {
     List<CompanyResponse> findAll();
 
     List<CompanyNameResponse> findAllNames();
+
+    void delete(String uuid);
 }

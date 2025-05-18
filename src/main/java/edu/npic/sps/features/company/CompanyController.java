@@ -19,6 +19,12 @@ public class CompanyController {
     private final CompanyService companyService;
 
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @DeleteMapping("/{uuid}")
+    void delete(@PathVariable String uuid) {
+        companyService.delete(uuid);
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     @PostMapping
     CompanyResponse createCompany(@RequestBody CreateCompany createCompany) {
         return companyService.createCompany(createCompany);

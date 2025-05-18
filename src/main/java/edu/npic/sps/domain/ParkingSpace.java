@@ -18,12 +18,13 @@ public class ParkingSpace {
     private Integer id;
     @Column(nullable = false, unique = true)
     private String uuid;
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = false, length = 200)
     private String label;
     @Column(nullable = false)
     private Integer lotQty;
 
     //optional
+    private String image;
     private Integer filled;
     private Integer empty;
 
@@ -31,10 +32,10 @@ public class ParkingSpace {
     private Boolean isDeleted;
 
     // relationship
-    @OneToMany(mappedBy = "parkingSpace")
+    @OneToMany(mappedBy = "parkingSpace", cascade = CascadeType.REMOVE)
     private List<ParkingLot> parkingLots;
 
-    @OneToMany(mappedBy = "parkingSpace")
+    @OneToMany(mappedBy = "parkingSpace", cascade = CascadeType.REMOVE)
     private List<ParkingLotDetail> parkingLotDetail;
 
     @ManyToOne

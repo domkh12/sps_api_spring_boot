@@ -1,11 +1,14 @@
 package edu.npic.sps.features.parkingLot;
 
-import edu.npic.sps.features.parkingLot.dto.ParkingSlotDetailResponse;
+import edu.npic.sps.features.parkingLot.dto.CreateParkingLot;
+import edu.npic.sps.features.parkingLot.dto.ParkingLotRequest;
+import edu.npic.sps.features.parkingLot.dto.ParkingLotResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/parking-lots")
@@ -14,25 +17,18 @@ public class ParkingLotController {
 
     private final ParkingLotService parkingLotService;
 
-//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-//    @GetMapping
-//    Page<ParkingSlotDetailResponse> findAll(@RequestParam(required = false, defaultValue = "1") int pageNo,
-//                                            @RequestParam(required = false, defaultValue = "30") int pageSize) {
-//        return parkingLotService.findAll(pageNo,pageSize);
-//    }
-//
-//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-//    @ResponseStatus(HttpStatus.CREATED)
-//    @GetMapping("/{uuid}")
-//    ParkingSlotDetailResponse findByUuid(@PathVariable String uuid) {
-//        return parkingLotService.findByUuid(uuid);
-//    }
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PatchMapping("/{uuid}")
+    @ResponseStatus(HttpStatus.CREATED)
+    List<ParkingLotResponse> update(@PathVariable String uuid, @RequestBody ParkingLotRequest parkingLotRequest){
+        return parkingLotService.update(uuid, parkingLotRequest);
+    }
 
-//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-//    @PostMapping("/vehicle-parking")
-//    @ResponseStatus(HttpStatus.CREATED)
-//    void createCarParking(@RequestBody CreateCarParking createCarParking){
-//        parkingSlotService.createCarParking(createCarParking);
-//    }
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    List<ParkingLotResponse> create(@RequestBody CreateParkingLot createParkingLot){
+        return parkingLotService.create(createParkingLot);
+    }
 
 }

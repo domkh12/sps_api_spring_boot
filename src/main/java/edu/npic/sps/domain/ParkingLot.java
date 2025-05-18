@@ -3,6 +3,7 @@ package edu.npic.sps.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Setter
@@ -21,10 +22,9 @@ public class ParkingLot {
     @Column(nullable = false)
     private Boolean isAvailable;
     @Column(nullable = false)
-    private Boolean isDeleted;
-    private String createdBy;
+    private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "parkingLot")
+    @OneToMany(mappedBy = "parkingLot", cascade = CascadeType.REMOVE)
     private List<ParkingLotDetail> parkingLotDetail;
 
     @ManyToOne

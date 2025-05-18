@@ -25,6 +25,9 @@ repositories {
 
 dependencies {
 
+    implementation 'redis.clients:jedis'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
     implementation 'com.warrenstrange:googleauth:1.4.0'
 
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'

@@ -44,7 +44,6 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
 
@@ -98,17 +97,21 @@ public class SecurityConfig {
         // Handle 403 , 401
         http.exceptionHandling(e -> e.accessDeniedHandler(customAccessDeniedHandler).authenticationEntryPoint(customAuthenticationEntryPoint));
 
-        http.oauth2Login(oauth -> oauth.successHandler(oAuth2LoginSuccessHandler));
-
         return http.build();
     }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000","http://localhost:4173", "https://sps.iot.npic.edu.kh"));
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://localhost:4173",
+                "http://192.168.100.15:3000",
+                "https://sps.iot.npic.edu.kh"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
-        configuration.setAllowedHeaders(List.of("authorization","content-type"));
+        configuration.setAllowedHeaders(List.of("Authorization","content-type"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

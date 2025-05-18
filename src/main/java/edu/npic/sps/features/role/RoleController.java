@@ -18,7 +18,7 @@ public class RoleController {
 
     private final RoleService roleService;
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     List<RoleResponse> findAll(){

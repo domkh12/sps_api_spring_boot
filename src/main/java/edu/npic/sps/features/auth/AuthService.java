@@ -2,6 +2,7 @@ package edu.npic.sps.features.auth;
 
 import edu.npic.sps.features.auth.dto.*;
 import edu.npic.sps.features.user.dto.CreateUserRegister;
+import edu.npic.sps.features.user.dto.UpdateProfileUserRequest;
 import edu.npic.sps.features.user.dto.UserDetailResponse;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +10,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 
 public interface AuthService {
+
+    MessageResponse resetPassword(ResetPasswordRequest resetPasswordRequest);
+
+    MessageResponse forgotPassword(String email);
 
     ResponseEntity<Void> logout(HttpServletResponse response);
 
@@ -26,9 +31,13 @@ public interface AuthService {
 
     MessageResponse verify2FA(Integer code);
 
-    MessageResponse verify2FALogin(Integer code, String token,HttpServletResponse response);
+    JwtResponse verify2FALogin(Integer code, String email, HttpServletResponse response);
 
     UserDetailResponse getProfileUser();
 
-    MessageResponse verifySites(String uuid, String token, HttpServletResponse response);
+    JwtResponse verifySites(String uuid, HttpServletResponse response);
+
+    UserDetailResponse updateProfileUser(UpdateProfileUserRequest updateProfileRequest);
+
+    void changePassword(ChangePasswordRequest changePasswordRequest);
 }

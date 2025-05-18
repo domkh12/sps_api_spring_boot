@@ -25,6 +25,6 @@ public class Company {
     private LocalDateTime createdAt;
 
 //    relationship
-    @OneToMany(mappedBy = "company")
+    @OneToMany(mappedBy = "company", cascade = CascadeType.REMOVE)
     private List<Site> sites;
 }

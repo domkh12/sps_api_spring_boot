@@ -27,7 +27,7 @@ public interface UserService {
 
     void deleteByUuid(String uuid);
 
-    UserDetailResponse updateUser(String uuid, UpdateUserRequest updateUserRequest) throws IOException;
+    UserDetailResponse updateUser(String uuid, UpdateUserRequest updateUserRequest) throws IOException, MessagingException;
 
     void createUser(CreateUser createUser) throws MessagingException;
 
@@ -48,6 +48,4 @@ public interface UserService {
     ResponseEntity<?> find2faStatus();
 
     ResponseEntity<?> find2faSecretCode();
-
-
 }

@@ -7,19 +7,33 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface VehicleRepository extends JpaRepository<Vehicle, Integer> {
 
-    Optional<Vehicle> findByUuid(String uuid);
+    long countBySites_Uuid(String uuid);
 
-    void deleteByVehicleType(VehicleType vehicleType);
+    Optional<Vehicle> findByUuid(String uuid);
 
     Boolean existsByNumberPlate(String numberPlate);
 
     Optional<Vehicle> findByNumberPlate(String numberPlate);
 
     Page<Vehicle> findBySites_Uuid(String uuid, Pageable pageable);
+
+    @Query("""
+            select v from Vehicle v left join v.sites sites
+            where (
+             upper(v.numberPlate) like upper(concat('%', ?1, '%'))
+             or upper(v.vehicleModel) like upper(concat('%', ?1, '%'))
+             or upper(v.vehicleMake) like upper(concat('%', ?1, '%'))
+             )
+             and (v.vehicleType.uuid in ?2 or ?2 is null)
+             and (sites.uuid in ?3 or ?3 is null)
+            """)
+    Page<Vehicle> filterVehicles(String keyword, Collection<String> vehicleTypeUuid, Collection<String> siteUuid, Pageable pageable);
 
 
 }

@@ -18,7 +18,7 @@ public class SignUpMethodController {
 
     private final SignUpMethodService signUpMethodService;
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     List<SignUpMethodResponse> findAll(){

@@ -16,6 +16,7 @@ public record UpdateUserRequest(
         String profileImage,
         String bannerImage,
         Boolean isDeleted,
+        Boolean isVerified,
         List<String> roleId,
         List<String> branchId
 ) {

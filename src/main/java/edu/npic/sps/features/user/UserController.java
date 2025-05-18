@@ -20,7 +20,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/full-names")
     List<FullNameResponse> findAllFullName (){
@@ -54,17 +54,17 @@ public class UserController {
         return userService.search(keyword, roleId, status, signUpMethodId, pageNo, pageSize, branchId);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{uuid}")
     void deleteByUuid(@PathVariable String uuid){
         userService.deleteByUuid(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/{uuid}")
-    UserDetailResponse updateUser(@PathVariable String uuid, @Valid @RequestBody UpdateUserRequest updateUserRequest) throws IOException {
+    UserDetailResponse updateUser(@PathVariable String uuid, @Valid @RequestBody UpdateUserRequest updateUserRequest) throws IOException, MessagingException {
         return userService.updateUser(uuid, updateUserRequest);
     }
 
@@ -92,14 +92,14 @@ public class UserController {
         return userService.findAll(pageNo, pageSize);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_USER')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/2fa-status")
     ResponseEntity<?> find2faStatus(){
         return userService.find2faStatus();
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_USER')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/2fa-secret-code")
     ResponseEntity<?> find2faSecretCode(){

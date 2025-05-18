@@ -1,6 +1,5 @@
 package edu.npic.sps.domain;
 
-import edu.npic.sps.base.Status;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
