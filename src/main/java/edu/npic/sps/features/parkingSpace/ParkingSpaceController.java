@@ -1,9 +1,10 @@
 package edu.npic.sps.features.parkingSpace;
 
 import edu.npic.sps.features.parkingSpace.dto.CreateParkingSpace;
-import edu.npic.sps.features.parkingSpace.dto.LabelResponse;
+import edu.npic.sps.features.parkingSpace.dto.ParkingNameResponse;
 import edu.npic.sps.features.parkingSpace.dto.ParkingSpaceRequest;
 import edu.npic.sps.features.parkingSpace.dto.ParkingSpaceResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/parking-spaces")
 @RequiredArgsConstructor
+@Tag(name = "Parking space Management", description = "APIs for managing parking spaces")
 public class ParkingSpaceController {
 
     private final ParkingSpaceService parkingSpaceService;
@@ -40,7 +42,7 @@ public class ParkingSpaceController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_USER')")
     @GetMapping("/labels")
-    List<LabelResponse> getAllLabels() {
+    List<ParkingNameResponse> getAllLabels() {
         return parkingSpaceService.getAllLabels();
     }
 

@@ -12,6 +12,7 @@ services:
 #    depends_on:
 #      - smart-parking-system-db
 #      - redis
+#    restart: unless-stopped
 
   smart-parking-system-db:
     image: postgres:16.4-alpine3.20
@@ -26,6 +27,7 @@ services:
       - smart-parking-system-db:/var/lib/postgresql/data
     networks:
       - smart-parking-net
+    restart: always
 
 #  keycloak:
 #    container_name: keycloak-sps

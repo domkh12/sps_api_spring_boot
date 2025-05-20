@@ -234,7 +234,19 @@ public class initData {
     }
 
     private void initVehicleData() {
-
+        Vehicle vehicle1 = new Vehicle();
+        vehicle1.setUuid(UUID.randomUUID().toString());
+        vehicle1.setLicensePlateType(licensePlateTypeRepository.findById(1).orElseThrow());
+        vehicle1.setVehicleType(vehicleTypeRepository.findById(1).orElseThrow());
+        vehicle1.setUser(userRepository.findById(1).orElseThrow());
+        vehicle1.setLicensePlateProvince(licensePlateProvinceRepository.findById(1).orElseThrow());
+        vehicle1.setVehicleModel("Toyota");
+        vehicle1.setVehicleMake("Honda");
+        vehicle1.setSites(List.of(siteRepository.findBySiteNameIgnoreCase("npic1").orElseThrow()));
+        vehicle1.setCreatedAt(LocalDateTime.now());
+        vehicle1.setColor("#000");
+        vehicle1.setIsDeleted(false);
+        vehicleRepository.save(vehicle1);
     }
 
 }

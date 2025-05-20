@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ParkingLotService {
 
-    Page<ParkingSlotDetailResponse> findAll(int pageNo, int pageSize);
+    Page<ParkingLotResponse> findAll(int pageNo, int pageSize);
 
 //    void createCarParking(CreateCarParking createCarParking);
 
@@ -19,4 +19,6 @@ public interface ParkingLotService {
     List<ParkingLotResponse> create(CreateParkingLot createParkingLot);
 
     List<ParkingLotResponse> update(String uuid, ParkingLotRequest parkingLotRequest);
+
+    ParkingLotResponse findParkingLotByUuid(String uuid);
 }

@@ -4,6 +4,7 @@ import edu.npic.sps.features.parkingLotDetail.dto.ParkingDetailResponse;
 import edu.npic.sps.features.vehicle.dto.CreateVehicle;
 import edu.npic.sps.features.vehicle.dto.VehicleRequest;
 import edu.npic.sps.features.vehicle.dto.VehicleResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/vehicles")
+@Tag(name = "Vehicle Management", description = "APIs for managing vehicles")
 public class VehicleController {
 
     private final VehicleService vehicleService;

@@ -1,6 +1,7 @@
 package edu.npic.sps.features.parkingLotDetail;
 
 import edu.npic.sps.features.parkingLotDetail.dto.ParkingDetailResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/parking-details")
 @RequiredArgsConstructor
+@Tag(name = "Parking lot details Management", description = "APIs for managing parking lot details")
 public class ParkingLotDetailController {
 
     private final ParkingLotDetailService parkingLotDetailService;

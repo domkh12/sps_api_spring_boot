@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 public interface CompanyService {
+    CompanyResponse findByUuid(String uuid);
+
     CompanyResponse createCompany(CreateCompany createCompany);
 
     List<CompanyResponse> findAll();

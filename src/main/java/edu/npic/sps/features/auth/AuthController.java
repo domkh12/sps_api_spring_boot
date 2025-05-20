@@ -4,6 +4,7 @@ import edu.npic.sps.features.auth.dto.*;
 import edu.npic.sps.features.user.dto.CreateUserRegister;
 import edu.npic.sps.features.user.dto.UpdateProfileUserRequest;
 import edu.npic.sps.features.user.dto.UserDetailResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
+@Tag(name = "Auth Management", description = "APIs for managing auth")
 public class AuthController {
 
     private final AuthService authService;

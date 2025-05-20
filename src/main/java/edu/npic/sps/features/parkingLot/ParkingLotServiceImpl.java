@@ -35,6 +35,14 @@ public class ParkingLotServiceImpl implements ParkingLotService {
     private final ParkingSpaceRepository parkingSpaceRepository;
 
     @Override
+    public ParkingLotResponse findParkingLotByUuid(String uuid) {
+        ParkingLot parkingLot = parkingLotRepository.findByUuid(uuid).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking lot not found!")
+        );
+        return parkingLotMapper.toParkingSlotResponse(parkingLot);
+    }
+
+    @Override
     public List<ParkingLotResponse> update(String uuid, ParkingLotRequest parkingLotRequest) {
 
         ParkingLot parkingLot = parkingLotRepository.findByUuid(uuid).orElseThrow(
@@ -90,7 +98,7 @@ public class ParkingLotServiceImpl implements ParkingLotService {
         return parkingLotList.stream().map(parkingLotMapper::toParkingSlotResponse).toList();
     }
     @Override
-    public Page<ParkingSlotDetailResponse> findAll(int pageNo, int pageSize) {
+    public Page<ParkingLotResponse> findAll(int pageNo, int pageSize) {
 
         if (pageNo < 1 || pageSize < 1) {
             throw new ResponseStatusException(
@@ -101,8 +109,8 @@ public class ParkingLotServiceImpl implements ParkingLotService {
 
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
-        Page<ParkingLotDetail> parkingSlotPage = parkingLotDetailRepository.findAll(pageRequest);
-        return parkingSlotPage.map(parkingLotMapper::toParkingSlotDetailResponse);
+        Page<ParkingLot> parkingSlotPage = parkingLotRepository.findAll(pageRequest);
+        return parkingSlotPage.map(parkingLotMapper::toParkingSlotResponse);
 
     }
 //    @Override

@@ -5,6 +5,7 @@ import edu.npic.sps.features.vehicle.dto.VehicleResponse;
 import edu.npic.sps.features.vehicletype.dto.UpdateRequest;
 import edu.npic.sps.features.vehicletype.dto.VehicleTypeRequest;
 import edu.npic.sps.features.vehicletype.dto.VehicleTypeResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/vehicle-types")
 @RequiredArgsConstructor
+@Tag(name = "Vehicle type Management", description = "APIs for managing vehicle type")
 public class VehicleTypeController {
 
     private final VehicleTypeService vehicleTypeService;

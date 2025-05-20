@@ -22,6 +22,14 @@ public class CompanyServiceImpl implements CompanyService{
     private final CompanyRepository companyRepository;
 
     @Override
+    public CompanyResponse findByUuid(String uuid) {
+        Company company = companyRepository.findByUuid(uuid).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found!")
+        );
+        return companyMapper.toCompanyResponse(company);
+    }
+
+    @Override
     public CompanyResponse createCompany(CreateCompany createCompany) {
 
         return null;
