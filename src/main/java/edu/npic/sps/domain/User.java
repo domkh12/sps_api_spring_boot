@@ -41,7 +41,7 @@ public class User {
     private Boolean isVerified;
     @Column(length = 200)
     private LocalDate dateOfBirth;
-    private String BannerImage;
+    private String bannerImage;
 
     // security
     private Boolean isAccountNonExpired;

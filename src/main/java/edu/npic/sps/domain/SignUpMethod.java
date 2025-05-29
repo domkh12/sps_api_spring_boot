@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -20,6 +21,8 @@ public class SignUpMethod {
     private String uuid;
     @Column(unique = true, nullable = false)
     private String name;
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "signUpMethod")
     private List<User> users;

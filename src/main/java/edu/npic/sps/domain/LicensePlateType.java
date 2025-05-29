@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -20,6 +21,8 @@ public class LicensePlateType {
     private String uuid;
     @Column(nullable = false, unique = true)
     private String name;
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
 //  relationship
 

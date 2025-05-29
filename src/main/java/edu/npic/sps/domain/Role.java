@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Setter
@@ -22,6 +23,8 @@ public class Role implements GrantedAuthority {
     private String uuid;
     @Column(nullable = false, unique = true)
     private String name;
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
     @ManyToMany(mappedBy = "roles")
     private List<User> users;
 
