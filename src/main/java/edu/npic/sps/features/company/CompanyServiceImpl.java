@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,8 +32,10 @@ public class CompanyServiceImpl implements CompanyService{
 
     @Override
     public CompanyResponse createCompany(CreateCompany createCompany) {
-
-        return null;
+        Company company = companyMapper.fromCreateCompany(createCompany);
+        company.setUuid(UUID.randomUUID().toString());
+        companyRepository.save(company);
+        return companyMapper.toCompanyResponse(company);
     }
 
     @Override
