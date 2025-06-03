@@ -14,6 +14,8 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface CompanyMapper {
 
+    Company fromCreateCompany(CreateCompany createCompany);
+
     @Named("mapSiteNamesToSites")
     default List<Site> mapSiteNamesToSites(List<String> siteNames) {
         return siteNames.stream()

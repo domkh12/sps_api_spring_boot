@@ -4,7 +4,7 @@ import edu.npic.sps.domain.ParkingLot;
 import edu.npic.sps.domain.ParkingSpace;
 import edu.npic.sps.domain.Site;
 import edu.npic.sps.features.parkingSpace.dto.CreateParkingSpace;
-import edu.npic.sps.features.parkingSpace.dto.LabelResponse;
+import edu.npic.sps.features.parkingSpace.dto.ParkingNameResponse;
 import edu.npic.sps.features.parkingLot.ParkingLotRepository;
 import edu.npic.sps.features.parkingSpace.dto.ParkingSpaceRequest;
 import edu.npic.sps.features.parkingSpace.dto.ParkingSpaceResponse;
@@ -167,7 +167,7 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
     }
 
     @Override
-    public List<LabelResponse> getAllLabels() {
+    public List<ParkingNameResponse> getAllLabels() {
         boolean isManager = authUtil.isManagerLoggedUser();
         boolean isAdmin = authUtil.isAdminLoggedUser();
         boolean isUser = authUtil.isUserLoggedUser();
@@ -208,7 +208,8 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
 
         ParkingSpace savedParkingSpace = parkingSpaceRepository.save(parkingSpace);
 
-        List<ParkingLot> parkingLots = createParkingSpace.lotName().stream().map(
+        List<ParkingLot> parkingLots = new ArrayList<>();
+              parkingLots = createParkingSpace.lotName().stream().map(
                 lot -> {
                     ParkingLot parkingLot = new ParkingLot();
                     parkingLot.setUuid(UUID.randomUUID().toString());
@@ -222,6 +223,7 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
                     return parkingLotRepository.save(parkingLot);
                 }
         ).toList();
+        savedParkingSpace.setParkingLots(parkingLots);
 
         return parkingSpaceMapper.toParkingSpaceResponse(parkingSpace);
     }

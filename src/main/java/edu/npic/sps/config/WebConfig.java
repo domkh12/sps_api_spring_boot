@@ -18,7 +18,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "http://localhost:5173",
                         "http://localhost:4173",
                         "http://192.168.100.15:3000",
-                        "https://sps.iot.npic.edu.kh"
+                        "https://sps.iot.npic.edu.kh",
+                        "http://172.31.255.215:3000"
                 );
     }
 }

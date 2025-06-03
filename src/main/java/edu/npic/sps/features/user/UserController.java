@@ -1,6 +1,7 @@
 package edu.npic.sps.features.user;
 
 import edu.npic.sps.features.user.dto.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
+@Tag(name = "User Management", description = "APIs for managing users")
 public class UserController {
 
     private final UserService userService;

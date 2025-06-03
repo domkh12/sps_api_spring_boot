@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -22,6 +23,8 @@ public class LicensePlateProvince {
     private String provinceNameKh;
     @Column(unique = true, nullable = false)
     private String provinceNameEn;
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
 //  relationship
     @OneToMany(mappedBy = "licensePlateProvince")

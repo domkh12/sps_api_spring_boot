@@ -1,7 +1,7 @@
 package edu.npic.sps.features.parkingSpace;
 
 import edu.npic.sps.features.parkingSpace.dto.CreateParkingSpace;
-import edu.npic.sps.features.parkingSpace.dto.LabelResponse;
+import edu.npic.sps.features.parkingSpace.dto.ParkingNameResponse;
 import edu.npic.sps.features.parkingSpace.dto.ParkingSpaceRequest;
 import edu.npic.sps.features.parkingSpace.dto.ParkingSpaceResponse;
 import org.springframework.data.domain.Page;
@@ -14,7 +14,7 @@ public interface ParkingSpaceService {
 
     Page<ParkingSpaceResponse> findAll(int pageNo, int pageSize);
 
-    List<LabelResponse> getAllLabels();
+    List<ParkingNameResponse> getAllLabels();
 
     ParkingSpaceResponse create(CreateParkingSpace createParkingSpace);
 

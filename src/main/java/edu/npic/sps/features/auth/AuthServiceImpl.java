@@ -202,6 +202,7 @@ public class AuthServiceImpl implements AuthService{
                 }
             }
         }
+        log.info("Refresh token: {}", refreshToken);
 
         if (refreshToken == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token is missing");

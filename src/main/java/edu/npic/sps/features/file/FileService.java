@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface FileService {
 
+    List<FileResponse> uploadMultipleFiles(List<MultipartFile> files);
+
     List<FileResponse> findAll();
 
     FileResponse uploadFile(MultipartFile file) throws IOException;

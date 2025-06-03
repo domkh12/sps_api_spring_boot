@@ -30,6 +30,31 @@ public class FileServiceImpl implements FileService{
     private String baseUri;
 
     @Override
+    public List<FileResponse> uploadMultipleFiles(List<MultipartFile> files) {
+
+        List<FileResponse> fileResponses = new ArrayList<>();
+        for(MultipartFile file : files){
+            try {
+                String newFileName = FileUtil.generateFileName(file.getOriginalFilename());
+                String extension = FileUtil.extractExtension(file.getOriginalFilename());
+
+                Path path = Path.of(serverPath + newFileName);
+                Files.copy(file.getInputStream(), path);
+
+                fileResponses.add(FileResponse.builder()
+                        .name(newFileName)
+                        .size(file.getSize())
+                        .extension(extension)
+                        .uri(baseUri + newFileName)
+                        .build());
+            } catch (IOException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error uploading file", e);
+            }
+        }
+        return fileResponses;
+    }
+
+    @Override
     public List<FileResponse> findAll() {
 
         Path path = Path.of(serverPath);

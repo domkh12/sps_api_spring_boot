@@ -3,6 +3,7 @@ package edu.npic.sps.features.site;
 import edu.npic.sps.features.site.dto.CreateSite;
 import edu.npic.sps.features.site.dto.SiteRequest;
 import edu.npic.sps.features.site.dto.SiteResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/sites")
+@Tag(name = "Site Management", description = "APIs for managing sites")
 public class SiteController {
 
     private final SiteService siteService;

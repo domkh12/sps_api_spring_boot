@@ -11,6 +11,7 @@ public record CreateParkingSpace(
         String image,
         @NotNull(message = "Site Uuid is required!")
         String siteUuid,
+        @NotNull(message = "Lot name is required!")
         List<String> lotName
 ) {
 }

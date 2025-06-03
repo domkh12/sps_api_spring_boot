@@ -11,9 +11,6 @@ import java.util.Optional;
 @Repository
 public interface ParkingLotRepository extends JpaRepository<ParkingLot, Integer> {
 
-    @Query("select p from ParkingLot p where p.parkingSpace.uuid = ?1")
-    Optional<ParkingLot> findByParkingSpace_Uuid(String uuid);
-
     long countByParkingSpace_Uuid(String uuid);
 
     @Query("select p from ParkingLot p where p.parkingSpace.uuid = ?1")

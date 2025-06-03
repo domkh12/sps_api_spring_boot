@@ -49,7 +49,7 @@ public class initData {
     private final LicensePlateTypeRepository licensePlateTypeRepository;
     private final LicensePlateProvinceRepository licensePlateProvinceRepository;
 
-    @PostConstruct
+//    @PostConstruct
     public void init() {
         try {
             initLicensePlateProvinces();
@@ -76,6 +76,7 @@ public class initData {
         SiteType siteType = new SiteType();
         siteType.setUuid(UUID.randomUUID().toString());
         siteType.setName("Education");
+        siteType.setCreatedAt(LocalDateTime.now());
         siteTypeRepository.save(siteType);
     }
 
@@ -83,6 +84,7 @@ public class initData {
         City city = new City();
         city.setUuid(UUID.randomUUID().toString());
         city.setName("Phnom Penh");
+        city.setCreatedAt(LocalDateTime.now());
         cityRepository.save(city);
     }
 
@@ -90,6 +92,7 @@ public class initData {
         LicensePlateType licensePlateType = new LicensePlateType();
         licensePlateType.setUuid(UUID.randomUUID().toString());
         licensePlateType.setName("Royal Cambodian Armed Forces");
+        licensePlateType.setCreatedAt(LocalDateTime.now());
         licensePlateTypeRepository.save(licensePlateType);
     }
 
@@ -98,6 +101,7 @@ public class initData {
         licensePlateProvince.setUuid(UUID.randomUUID().toString());
         licensePlateProvince.setProvinceNameEn("Phnom Penh");
         licensePlateProvince.setProvinceNameKh("ភ្នំពេញ");
+        licensePlateProvince.setCreatedAt(LocalDateTime.now());
         licensePlateProvinceRepository.save(licensePlateProvince);
     }
 
@@ -137,9 +141,11 @@ public class initData {
         SignUpMethod signUpMethod = new SignUpMethod();
         signUpMethod.setUuid(UUID.randomUUID().toString());
         signUpMethod.setName("AZURE");
+        signUpMethod.setCreatedAt(LocalDateTime.now());
         SignUpMethod signUpMethod2 = new SignUpMethod();
         signUpMethod2.setUuid(UUID.randomUUID().toString());
         signUpMethod2.setName("CUSTOM");
+        signUpMethod2.setCreatedAt(LocalDateTime.now());
         signUpMethodRepository.save(signUpMethod2);
         signUpMethodRepository.save(signUpMethod);
     }
@@ -192,10 +198,9 @@ public class initData {
 
     private void initRoles(){
         List<Role> roles = new ArrayList<>();
-        roles.add(Role.builder().uuid(UUID.randomUUID().toString()).name("MANAGER").build());
-        roles.add(Role.builder().uuid(UUID.randomUUID().toString()).name("ADMIN").build());
-        roles.add(Role.builder().uuid(UUID.randomUUID().toString()).name("USER").build());
-
+        roles.add(Role.builder().uuid(UUID.randomUUID().toString()).name("MANAGER").createdAt(LocalDateTime.now()).build());
+        roles.add(Role.builder().uuid(UUID.randomUUID().toString()).name("ADMIN").createdAt(LocalDateTime.now()).build());
+        roles.add(Role.builder().uuid(UUID.randomUUID().toString()).name("USER").createdAt(LocalDateTime.now()).build());
         roleRepository.saveAll(roles);
 
     }
@@ -234,7 +239,19 @@ public class initData {
     }
 
     private void initVehicleData() {
-
+        Vehicle vehicle1 = new Vehicle();
+        vehicle1.setUuid(UUID.randomUUID().toString());
+        vehicle1.setLicensePlateType(licensePlateTypeRepository.findById(1).orElseThrow());
+        vehicle1.setVehicleType(vehicleTypeRepository.findById(1).orElseThrow());
+        vehicle1.setUser(userRepository.findById(1).orElseThrow());
+        vehicle1.setLicensePlateProvince(licensePlateProvinceRepository.findById(1).orElseThrow());
+        vehicle1.setVehicleModel("Toyota");
+        vehicle1.setVehicleMake("Honda");
+        vehicle1.setSites(List.of(siteRepository.findBySiteNameIgnoreCase("npic1").orElseThrow()));
+        vehicle1.setCreatedAt(LocalDateTime.now());
+        vehicle1.setColor("#000");
+        vehicle1.setIsDeleted(false);
+        vehicleRepository.save(vehicle1);
     }
 
 }
