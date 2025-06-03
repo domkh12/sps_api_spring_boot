@@ -29,12 +29,14 @@ public class CompanyController {
 
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     @DeleteMapping("/{uuid}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     void delete(@PathVariable String uuid) {
         companyService.delete(uuid);
     }
 
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     CompanyResponse createCompany(@RequestBody CreateCompany createCompany) {
         return companyService.createCompany(createCompany);
     }

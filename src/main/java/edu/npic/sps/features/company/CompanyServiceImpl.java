@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,8 +33,12 @@ public class CompanyServiceImpl implements CompanyService{
 
     @Override
     public CompanyResponse createCompany(CreateCompany createCompany) {
+        if (companyRepository.existsByCompanyNameIgnoreCase(createCompany.companyName())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Company name already exists!");
+        }
         Company company = companyMapper.fromCreateCompany(createCompany);
         company.setUuid(UUID.randomUUID().toString());
+        company.setCreatedAt(LocalDateTime.now());
         companyRepository.save(company);
         return companyMapper.toCompanyResponse(company);
     }

@@ -8,7 +8,6 @@ import java.util.List;
 @Builder
 public record CompanyResponse(
         String uuid,
-        String companyName,
-        List<SiteNameResponse> sites
+        String companyName
 ) {
 }
