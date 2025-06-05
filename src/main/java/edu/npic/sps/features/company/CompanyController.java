@@ -20,6 +20,10 @@ public class CompanyController {
 
     private final CompanyService companyService;
 
+//    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+//    @GetMapping("/{uuid}")
+//    @ResponseStatus(HttpStatus.C)
+
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     @GetMapping("/{uuid}")
     @ResponseStatus(HttpStatus.OK)

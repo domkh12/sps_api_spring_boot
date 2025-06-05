@@ -4,8 +4,6 @@ import edu.npic.sps.domain.Company;
 import edu.npic.sps.features.company.dto.CompanyNameResponse;
 import edu.npic.sps.features.company.dto.CompanyResponse;
 import edu.npic.sps.features.company.dto.CreateCompany;
-import edu.npic.sps.features.siteType.SiteTypeRepository;
-import edu.npic.sps.features.site.SiteRepository;
 import edu.npic.sps.mapper.CompanyMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

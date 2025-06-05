@@ -23,6 +23,7 @@ public class Company {
     private String companyName;
     @Column(nullable = false)
     private LocalDateTime createdAt;
+    private String image;
 
 //    relationship
     @OneToMany(mappedBy = "company", cascade = CascadeType.REMOVE)
