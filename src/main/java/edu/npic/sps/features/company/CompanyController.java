@@ -44,8 +44,11 @@ public class CompanyController {
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    List<CompanyResponse> findAll(){
-        return companyService.findAll();
+    Page<CompanyResponse> findAll(
+            @RequestParam(required = false, defaultValue = "1") int pageNo,
+            @RequestParam(required = false, defaultValue = "20") int pageSize
+    ){
+        return companyService.findAll(pageNo, pageSize);
     }
 
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")

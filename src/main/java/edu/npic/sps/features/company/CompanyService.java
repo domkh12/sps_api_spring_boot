@@ -12,7 +12,7 @@ public interface CompanyService {
 
     CompanyResponse createCompany(CreateCompany createCompany);
 
-    List<CompanyResponse> findAll();
+    Page<CompanyResponse> findAll(int pageNo, int pageSize);
 
     List<CompanyNameResponse> findAllNames();
 

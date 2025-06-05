@@ -8,6 +8,9 @@ import edu.npic.sps.features.siteType.SiteTypeRepository;
 import edu.npic.sps.features.site.SiteRepository;
 import edu.npic.sps.mapper.CompanyMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -44,10 +47,19 @@ public class CompanyServiceImpl implements CompanyService{
     }
 
     @Override
-    public List<CompanyResponse> findAll() {
-        List<Company> companies = companyRepository.findAll();
+    public Page<CompanyResponse> findAll(int pageNo, int pageSize) {
 
-        return companies.stream().map(company -> companyMapper.toCompanyResponse(company)).toList();
+        if (pageNo < 1 || pageSize < 1) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Page number or page size must be greater than zero"
+            );
+        }
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
+        Page<Company> companies = companyRepository.findAll(pageRequest);
+
+        return companies.map(companyMapper::toCompanyResponse);
     }
 
     @Override
