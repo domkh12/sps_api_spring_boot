@@ -49,7 +49,7 @@ public class initData {
     private final LicensePlateTypeRepository licensePlateTypeRepository;
     private final LicensePlateProvinceRepository licensePlateProvinceRepository;
 
-//    @PostConstruct
+//  @PostConstruct
     public void init() {
         try {
             initLicensePlateProvinces();
