@@ -21,6 +21,8 @@ public class Company {
     private String uuid;
     @Column(nullable = false, unique = true)
     private String companyName;
+
+    private String companyAddress;
     @Column(nullable = false)
     private LocalDateTime createdAt;
     private String image;
@@ -28,4 +30,7 @@ public class Company {
 //    relationship
     @OneToMany(mappedBy = "company", cascade = CascadeType.REMOVE)
     private List<Site> sites;
+
+    @ManyToOne
+    private CompanyType companyType;
 }

@@ -1,9 +1,11 @@
 package edu.npic.sps.features.company;
 
 import edu.npic.sps.domain.Company;
+import edu.npic.sps.domain.CompanyType;
 import edu.npic.sps.features.company.dto.CompanyNameResponse;
 import edu.npic.sps.features.company.dto.CompanyResponse;
-import edu.npic.sps.features.company.dto.CreateCompany;
+import edu.npic.sps.features.company.dto.CompanyRequest;
+import edu.npic.sps.features.companyType.CompanyTypeRepository;
 import edu.npic.sps.mapper.CompanyMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,6 +25,22 @@ public class CompanyServiceImpl implements CompanyService{
 
     private final CompanyMapper companyMapper;
     private final CompanyRepository companyRepository;
+    private final CompanyTypeRepository companyTypeRepository;
+
+    @Override
+    public CompanyResponse update(String uuid, CompanyRequest companyRequest) {
+        Company company = companyRepository.findByUuid(uuid).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found!")
+        );
+
+        CompanyType companyType = companyTypeRepository.findByUuid(companyRequest.companyTypeUuid()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company type not found!")
+        );
+
+        companyMapper.updateFromCompanyRequest(companyRequest, company);
+        company.setCompanyType(companyType);
+        return companyMapper.toCompanyResponse(companyRepository.save(company));
+    }
 
     @Override
     public CompanyResponse findByUuid(String uuid) {
@@ -33,11 +51,15 @@ public class CompanyServiceImpl implements CompanyService{
     }
 
     @Override
-    public CompanyResponse createCompany(CreateCompany createCompany) {
-        if (companyRepository.existsByCompanyNameIgnoreCase(createCompany.companyName())){
+    public CompanyResponse createCompany(CompanyRequest companyRequest) {
+        if (companyRepository.existsByCompanyNameIgnoreCase(companyRequest.companyName())){
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Company name already exists!");
         }
-        Company company = companyMapper.fromCreateCompany(createCompany);
+        CompanyType companyType = companyTypeRepository.findByUuid(companyRequest.companyTypeUuid()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company type not found!")
+        );
+        Company company = companyMapper.fromCreateCompany(companyRequest);
+        company.setCompanyType(companyType);
         company.setUuid(UUID.randomUUID().toString());
         company.setCreatedAt(LocalDateTime.now());
         companyRepository.save(company);

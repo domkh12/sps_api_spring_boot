@@ -10,11 +10,11 @@ import java.util.Date;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table
-@Entity(name = "device_meta_data")
+@Entity
+@Table(name = "device_meta_data")
 public class DeviceMetadata {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private Long userId;
     private String deviceDetails;
