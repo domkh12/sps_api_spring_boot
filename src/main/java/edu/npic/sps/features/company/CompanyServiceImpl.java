@@ -1,7 +1,9 @@
 package edu.npic.sps.features.company;
 
+import edu.npic.sps.domain.City;
 import edu.npic.sps.domain.Company;
 import edu.npic.sps.domain.CompanyType;
+import edu.npic.sps.features.city.CityRepository;
 import edu.npic.sps.features.company.dto.CompanyNameResponse;
 import edu.npic.sps.features.company.dto.CompanyResponse;
 import edu.npic.sps.features.company.dto.CompanyRequest;
@@ -26,6 +28,7 @@ public class CompanyServiceImpl implements CompanyService{
     private final CompanyMapper companyMapper;
     private final CompanyRepository companyRepository;
     private final CompanyTypeRepository companyTypeRepository;
+    private final CityRepository cityRepository;
 
     @Override
     public CompanyResponse update(String uuid, CompanyRequest companyRequest) {
@@ -36,8 +39,11 @@ public class CompanyServiceImpl implements CompanyService{
         CompanyType companyType = companyTypeRepository.findByUuid(companyRequest.companyTypeUuid()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company type not found!")
         );
-
+        City city = cityRepository.findByUuid(companyRequest.cityUuid()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "City not found!")
+        );
         companyMapper.updateFromCompanyRequest(companyRequest, company);
+        company.setCity(city);
         company.setCompanyType(companyType);
         return companyMapper.toCompanyResponse(companyRepository.save(company));
     }
@@ -58,7 +64,12 @@ public class CompanyServiceImpl implements CompanyService{
         CompanyType companyType = companyTypeRepository.findByUuid(companyRequest.companyTypeUuid()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company type not found!")
         );
+        City city = cityRepository.findByUuid(companyRequest.cityUuid()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "City not found!")
+        );
         Company company = companyMapper.fromCreateCompany(companyRequest);
+        company.setCity(city);
+        company.setSiteQty(0);
         company.setCompanyType(companyType);
         company.setUuid(UUID.randomUUID().toString());
         company.setCreatedAt(LocalDateTime.now());

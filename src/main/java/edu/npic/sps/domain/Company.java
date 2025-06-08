@@ -21,8 +21,10 @@ public class Company {
     private String uuid;
     @Column(nullable = false, unique = true)
     private String companyName;
-
+    @Column(nullable = false)
+    private Integer siteQty;
     private String companyAddress;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
     private String image;
@@ -33,4 +35,7 @@ public class Company {
 
     @ManyToOne
     private CompanyType companyType;
+
+    @ManyToOne
+    private City city;
 }

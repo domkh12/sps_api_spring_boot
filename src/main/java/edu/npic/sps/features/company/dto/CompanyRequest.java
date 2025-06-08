@@ -8,6 +8,7 @@ public record CompanyRequest(
         String address,
         @NotBlank(message = "Company type uuid is required")
         String companyTypeUuid,
-        String image
+        String image,
+        String cityUuid
 ) {
 }
