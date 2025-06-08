@@ -1,8 +1,8 @@
 package edu.npic.sps.features.company;
 
 import edu.npic.sps.features.company.dto.CompanyNameResponse;
+import edu.npic.sps.features.company.dto.CompanyRequest;
 import edu.npic.sps.features.company.dto.CompanyResponse;
-import edu.npic.sps.features.company.dto.CreateCompany;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,9 +20,12 @@ public class CompanyController {
 
     private final CompanyService companyService;
 
-//    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
-//    @GetMapping("/{uuid}")
-//    @ResponseStatus(HttpStatus.C)
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PutMapping("/{uuid}")
+    @ResponseStatus(HttpStatus.CREATED)
+    CompanyResponse update(@PathVariable String uuid, @RequestBody CompanyRequest companyRequest) {
+        return companyService.update(uuid, companyRequest);
+    }
 
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     @GetMapping("/{uuid}")
@@ -41,8 +44,8 @@ public class CompanyController {
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    CompanyResponse createCompany(@RequestBody CreateCompany createCompany) {
-        return companyService.createCompany(createCompany);
+    CompanyResponse createCompany(@RequestBody CompanyRequest companyRequest) {
+        return companyService.createCompany(companyRequest);
     }
 
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
