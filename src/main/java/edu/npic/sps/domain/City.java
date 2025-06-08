@@ -31,4 +31,7 @@ public class City implements Serializable {
 //    relationship
     @OneToMany(mappedBy = "city")
     List<Site> sites;
+
+    @OneToMany(mappedBy = "city")
+    List<Company> companies;
 }

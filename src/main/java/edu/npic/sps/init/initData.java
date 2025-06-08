@@ -135,6 +135,8 @@ public class initData {
         company.setUuid(UUID.randomUUID().toString());
         company.setCompanyName("National Polytechnic Institute of Cambodia");
         company.setCompanyAddress("123 Main St");
+        company.setSiteQty(0);
+        company.setCity(cityRepository.findById(1).orElseThrow());
         company.setCompanyType(companyTypeRepository.findById(1).orElseThrow());
         company.setCreatedAt(LocalDateTime.now());
         companyRepository.save(company);
