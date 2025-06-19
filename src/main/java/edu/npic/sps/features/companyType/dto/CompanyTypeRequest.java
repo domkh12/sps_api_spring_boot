@@ -1,10 +1,9 @@
 package edu.npic.sps.features.companyType.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
-import java.time.LocalDateTime;
+import jakarta.validation.constraints.NotBlank;
 
 public record CompanyTypeRequest(
+        @NotBlank(message = "Name is required")
         String name
 ) {
 }
