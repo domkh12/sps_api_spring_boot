@@ -4,6 +4,7 @@ import edu.npic.sps.features.company.dto.CompanyNameResponse;
 import edu.npic.sps.features.company.dto.CompanyRequest;
 import edu.npic.sps.features.company.dto.CompanyResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,7 @@ public class CompanyController {
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     @PutMapping("/{uuid}")
     @ResponseStatus(HttpStatus.CREATED)
-    CompanyResponse update(@PathVariable String uuid, @RequestBody CompanyRequest companyRequest) {
+    CompanyResponse update(@PathVariable String uuid,@Valid @RequestBody CompanyRequest companyRequest) {
         return companyService.update(uuid, companyRequest);
     }
 
@@ -44,7 +45,7 @@ public class CompanyController {
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    CompanyResponse createCompany(@RequestBody CompanyRequest companyRequest) {
+    CompanyResponse createCompany(@Valid @RequestBody CompanyRequest companyRequest) {
         return companyService.createCompany(companyRequest);
     }
 

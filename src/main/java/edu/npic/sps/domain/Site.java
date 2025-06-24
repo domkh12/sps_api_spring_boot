@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "sites")
+@Table(name = "branches")
 @AllArgsConstructor
 public class Site {
     @Id

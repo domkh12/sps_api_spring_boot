@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "site_types")
+@Table(name = "branch_types")
 public class SiteType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

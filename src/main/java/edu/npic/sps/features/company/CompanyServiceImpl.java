@@ -35,7 +35,6 @@ public class CompanyServiceImpl implements CompanyService{
         Company company = companyRepository.findByUuid(uuid).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found!")
         );
-
         CompanyType companyType = companyTypeRepository.findByUuid(companyRequest.companyTypeUuid()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company type not found!")
         );
@@ -97,9 +96,7 @@ public class CompanyServiceImpl implements CompanyService{
     public List<CompanyNameResponse> findAllNames() {
         List<Company> companyList = companyRepository.findAll();
 
-        return companyList.stream().map(
-                company -> companyMapper.toCompanyNameResponse(company)
-        ).toList();
+        return companyList.stream().map(companyMapper::toCompanyNameResponse).toList();
     }
 
     @Override
@@ -107,8 +104,6 @@ public class CompanyServiceImpl implements CompanyService{
         Company company = companyRepository.findByUuid(uuid).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found!")
         );
-
-        companyRepository.delete(company);
+        companyRepository.deleteByUuid(company.getUuid());
     }
-
 }

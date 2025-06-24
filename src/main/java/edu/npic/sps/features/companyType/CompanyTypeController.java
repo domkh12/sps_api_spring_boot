@@ -1,6 +1,5 @@
 package edu.npic.sps.features.companyType;
 
-import edu.npic.sps.domain.CompanyType;
 import edu.npic.sps.features.companyType.dto.CompanyTypeRequest;
 import edu.npic.sps.features.companyType.dto.CompanyTypeResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

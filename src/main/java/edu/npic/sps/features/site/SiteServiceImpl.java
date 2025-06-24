@@ -100,7 +100,10 @@ public class SiteServiceImpl implements SiteService{
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found!")
         );
 
+        Company company = site.getCompany();
         siteRepository.delete(site);
+        company.setSiteQty(company.getSiteQty() - 1);
+        companyRepository.save(company);
     }
 
     @Override
@@ -122,13 +125,14 @@ public class SiteServiceImpl implements SiteService{
         Company company = companyRepository.findByUuid(createSite.companyUuid()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found!")
         );
-
         site.setUuid(UUID.randomUUID().toString());
         site.setCompany(company);
         site.setCity(city);
         site.setSiteType(siteType);
         site.setCreatedAt(LocalDateTime.now());
         siteRepository.save(site);
+        company.setSiteQty(company.getSiteQty() + 1);
+        companyRepository.save(company);
         return siteMapper.toSiteResponse(site);
     }
 

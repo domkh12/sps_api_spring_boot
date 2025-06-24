@@ -18,6 +18,7 @@ public record CompanyResponse(
         LocalDateTime createdAt,
         CompanyTypeResponse companyType,
         Integer siteQty,
-        CityResponse city
+        CityResponse city,
+        String image
 ) {
 }
