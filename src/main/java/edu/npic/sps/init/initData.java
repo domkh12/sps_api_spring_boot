@@ -4,6 +4,7 @@ import edu.npic.sps.base.Status;
 import edu.npic.sps.domain.*;
 import edu.npic.sps.features.city.CityRepository;
 import edu.npic.sps.features.company.CompanyRepository;
+import edu.npic.sps.features.companyType.CompanyTypeRepository;
 import edu.npic.sps.features.licensePlateProvince.LicensePlateProvinceRepository;
 import edu.npic.sps.features.licensePlateType.LicensePlateTypeRepository;
 import edu.npic.sps.features.siteType.SiteTypeRepository;
@@ -48,10 +49,12 @@ public class initData {
     private final CityRepository cityRepository;
     private final LicensePlateTypeRepository licensePlateTypeRepository;
     private final LicensePlateProvinceRepository licensePlateProvinceRepository;
+    private final CompanyTypeRepository companyTypeRepository;
 
-//    @PostConstruct
+    @PostConstruct
     public void init() {
         try {
+            initCompanyTypeData();
             initLicensePlateProvinces();
             initLicensePlateTypeData();
             initCityData();
@@ -70,6 +73,14 @@ public class initData {
             System.err.println("Error during initializations: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private void initCompanyTypeData(){
+        CompanyType companyType = new CompanyType();
+        companyType.setUuid(UUID.randomUUID().toString());
+        companyType.setName("Education");
+        companyType.setCreatedAt(LocalDateTime.now());
+        companyTypeRepository.save(companyType);
     }
 
     private void initSiteTypeData(){
@@ -123,6 +134,10 @@ public class initData {
         Company company = new Company();
         company.setUuid(UUID.randomUUID().toString());
         company.setCompanyName("National Polytechnic Institute of Cambodia");
+        company.setCompanyAddress("123 Main St");
+        company.setSiteQty(0);
+        company.setCity(cityRepository.findById(1).orElseThrow());
+        company.setCompanyType(companyTypeRepository.findById(1).orElseThrow());
         company.setCreatedAt(LocalDateTime.now());
         companyRepository.save(company);
     }
