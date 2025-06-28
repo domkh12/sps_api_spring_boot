@@ -1,0 +1,74 @@
+services:
+#  smart-parking-api:
+#    image: "smart-parking-api"
+#    build: .
+#    container_name: smart-parking-api
+#    ports:
+#      - 55555:8080
+#    volumes:
+#      - C:\NPIC\Smart_Parking_System_API\sps\file-server:/file-server/
+#    networks:
+#      - smart-parking-net
+#    depends_on:
+#      - smart-parking-system-db
+#      - redis
+#    restart: unless-stopped
+
+  smart-parking-system-db:
+    image: postgres:16.4-alpine3.20
+    container_name: smart-parking-system-db
+    ports:
+      - 5555:5432
+    environment:
+      POSTGRES_USER: udom
+      POSTGRES_PASSWORD: Domkh@#12
+      POSTGRES_DB: smart-parking-system-db
+    volumes:
+      - smart-parking-system-db:/var/lib/postgresql/data
+    networks:
+      - smart-parking-net
+    restart: always
+
+#  keycloak:
+#    container_name: keycloak-sps
+#    image: quay.io/keycloak/keycloak:26.0.5
+#    ports:
+#      - 9090:8080
+#    environment:
+#      KEYCLOAK_ADMIN: admin
+#      KEYCLOAK_ADMIN_PASSWORD: admin
+#    networks:
+#      - smart-parking-net
+#    command:
+#      - "start-dev"
+
+  redis:
+    image: redis
+    command: >
+      --requirepass Domkh@#12
+    ports:
+      - '6379:6379'
+    volumes:
+      - 'redis_data:/data'
+    networks:
+      - smart-parking-net
+    restart: always
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: redis-gui
+    restart: always
+    ports:
+      - "5540:5540"
+    volumes:
+      - 'redis-insight:/db'
+
+volumes:
+  smart-parking-system-db:
+  redis_data:
+  redis-insight:
+    driver: local
+
+networks:
+  smart-parking-net:
+    driver: bridge
