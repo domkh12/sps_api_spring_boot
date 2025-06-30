@@ -1,6 +1,7 @@
 package edu.npic.sps.features.site;
 
 import edu.npic.sps.features.site.dto.CreateSite;
+import edu.npic.sps.features.site.dto.BranchListResponse;
 import edu.npic.sps.features.site.dto.SiteRequest;
 import edu.npic.sps.features.site.dto.SiteResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +21,13 @@ import java.util.List;
 public class SiteController {
 
     private final SiteService siteService;
+
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @GetMapping("/list")
+    @ResponseStatus(HttpStatus.OK)
+    List<BranchListResponse> listBranches(){
+        return siteService.listBranches();
+    }
 
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     @GetMapping("/{uuid}")

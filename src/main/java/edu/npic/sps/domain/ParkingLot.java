@@ -23,6 +23,7 @@ public class ParkingLot {
     private Boolean isAvailable;
     @Column(nullable = false)
     private LocalDateTime createdAt;
+    private String image;
 
     @OneToMany(mappedBy = "parkingLot", cascade = CascadeType.REMOVE)
     private List<ParkingLotDetail> parkingLotDetail;

@@ -1,6 +1,7 @@
 package edu.npic.sps.features.site;
 
 import edu.npic.sps.features.site.dto.CreateSite;
+import edu.npic.sps.features.site.dto.BranchListResponse;
 import edu.npic.sps.features.site.dto.SiteRequest;
 import edu.npic.sps.features.site.dto.SiteResponse;
 import org.springframework.data.domain.Page;
@@ -8,6 +9,8 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 public interface SiteService {
+
+    List<BranchListResponse> listBranches();
 
     SiteResponse findByUuid(String uuid);
 

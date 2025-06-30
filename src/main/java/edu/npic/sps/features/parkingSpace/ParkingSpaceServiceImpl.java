@@ -98,10 +98,7 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking space not found!")
         );
 
-        List<ParkingLot> parkingLots = parkingLotRepository.findByParkingSpaceUuid(uuid);
-        parkingLotRepository.deleteAll(parkingLots);
-
-        parkingSpaceRepository.delete(parkingSpace);
+        parkingSpaceRepository.deleteByUuid(parkingSpace.getUuid());
     }
 
     @Override

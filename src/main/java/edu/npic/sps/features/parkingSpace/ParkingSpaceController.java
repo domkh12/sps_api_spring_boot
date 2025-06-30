@@ -41,7 +41,7 @@ public class ParkingSpaceController {
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_USER')")
-    @GetMapping("/labels")
+    @GetMapping("/list")
     List<ParkingNameResponse> getAllLabels() {
         return parkingSpaceService.getAllLabels();
     }

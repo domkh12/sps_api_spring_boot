@@ -5,6 +5,7 @@ import edu.npic.sps.features.city.CityRepository;
 import edu.npic.sps.features.company.CompanyRepository;
 import edu.npic.sps.features.parkingSpace.ParkingSpaceRepository;
 import edu.npic.sps.features.site.dto.CreateSite;
+import edu.npic.sps.features.site.dto.BranchListResponse;
 import edu.npic.sps.features.site.dto.SiteRequest;
 import edu.npic.sps.features.site.dto.SiteResponse;
 import edu.npic.sps.features.siteType.SiteTypeRepository;
@@ -37,6 +38,12 @@ public class SiteServiceImpl implements SiteService{
     private final UserRepository userRepository;
     private final VehicleRepository vehicleRepository;
     private final ParkingSpaceRepository parkingSpaceRepository;
+
+    @Override
+    public List<BranchListResponse> listBranches() {
+        List<Site> sites = siteRepository.findAll();
+        return sites.stream().map(siteMapper::toBranchListResponse).toList();
+    }
 
     @Override
     public SiteResponse findByUuid(String uuid) {

@@ -17,7 +17,7 @@ import java.util.Optional;
 public interface SiteRepository extends JpaRepository<Site, Integer> {
     @Transactional
     @Modifying
-    @Query(value = "UPDATE parking_spaces SET site_id = null WHERE site_id IN (SELECT id FROM branches branches b WHERE b.uuid = ?1); DELETE FROM users_sites WHERE site_id IN (SELECT id FROM branches b WHERE b.uuid = ?1); DELETE FROM vehicles_sites WHERE site_id IN (SELECT id FROM branches b WHERE b.uuid = ?1); DELETE FROM branches b WHERE b.uuid = ?1", nativeQuery = true)
+    @Query(value = "UPDATE parking_spaces SET site_id = null WHERE site_id IN (SELECT id FROM branches b WHERE b.uuid = ?1); DELETE FROM users_sites WHERE site_id IN (SELECT id FROM branches b WHERE b.uuid = ?1); DELETE FROM vehicles_sites WHERE site_id IN (SELECT id FROM branches b WHERE b.uuid = ?1); DELETE FROM branches b WHERE b.uuid = ?1", nativeQuery = true)
     void deleteByUuid(String uuid);
 
 

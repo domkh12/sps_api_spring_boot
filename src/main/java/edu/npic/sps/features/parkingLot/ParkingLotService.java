@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface ParkingLotService {
 
+    Page<ParkingLotResponse> filter(int pageNo, int pageSize, String branchUuid, String keywords);
+
     List<ParkingLotResponse> createMultipleParkingLot(CreateMultipleSlot createMultipleSlot);
 
     Page<ParkingLotResponse> findAll(int pageNo, int pageSize);
@@ -15,9 +17,9 @@ public interface ParkingLotService {
 
     ParkingSlotDetailResponse findByUuid(String uuid);
 
-    List<ParkingLotResponse> create(CreateParkingLot createParkingLot);
+    ParkingLotResponse create(ParkingLotRequest parkingLotRequest);
 
-    List<ParkingLotResponse> update(String uuid, ParkingLotRequest parkingLotRequest);
+    ParkingLotResponse update(String uuid, ParkingLotRequest parkingLotRequest);
 
     ParkingLotResponse findParkingLotByUuid(String uuid);
 }

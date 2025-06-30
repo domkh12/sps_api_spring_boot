@@ -19,6 +19,18 @@ public class ParkingLotController {
     private final ParkingLotService parkingLotService;
 
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @GetMapping("/filter")
+    @ResponseStatus(HttpStatus.OK)
+    Page<ParkingLotResponse> filter(
+            @RequestParam(required = false, defaultValue = "1") int pageNo,
+            @RequestParam(required = false, defaultValue = "20") int pageSize,
+            @RequestParam(required = false) String branchUuid,
+            @RequestParam(required = false) String keywords
+    ) {
+        return parkingLotService.filter(pageNo, pageSize, branchUuid, keywords);
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     Page<ParkingLotResponse> findAll(
@@ -36,17 +48,17 @@ public class ParkingLotController {
     }
 
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
-    @PatchMapping("/{uuid}")
+    @PutMapping("/{uuid}")
     @ResponseStatus(HttpStatus.CREATED)
-    List<ParkingLotResponse> update(@PathVariable String uuid, @RequestBody ParkingLotRequest parkingLotRequest){
+    ParkingLotResponse update(@PathVariable String uuid, @RequestBody ParkingLotRequest parkingLotRequest){
         return parkingLotService.update(uuid, parkingLotRequest);
     }
 
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    List<ParkingLotResponse> create(@RequestBody CreateParkingLot createParkingLot){
-        return parkingLotService.create(createParkingLot);
+    ParkingLotResponse create(@RequestBody ParkingLotRequest parkingLotRequest){
+        return parkingLotService.create(parkingLotRequest);
     }
 
     @PreAuthorize("hasAuthority('ROLE_MANAGER')")

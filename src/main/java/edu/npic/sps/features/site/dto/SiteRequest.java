@@ -1,15 +1,18 @@
 package edu.npic.sps.features.site.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record SiteRequest(
-        @Size(min = 2, max = 500, message = "Site name must be between 3 and 500 characters")
+        @NotBlank(message = "Site name cannot be blank")
         String siteName,
-        @Size(max = 500, message = "Site address must be no longer than 500 characters")
         String siteAddress,
         String image,
+        @NotBlank(message = "City UUID cannot be blank")
         String cityUuid,
+        @NotBlank(message = "Site type UUID cannot be blank")
         String siteTypeUuid,
+        @NotBlank(message = "Company UUID cannot be blank")
         String companyUuid
 ) {
 }

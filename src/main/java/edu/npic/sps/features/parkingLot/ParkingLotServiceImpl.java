@@ -32,6 +32,25 @@ public class ParkingLotServiceImpl implements ParkingLotService {
     private final ParkingSpaceRepository parkingSpaceRepository;
 
     @Override
+    public Page<ParkingLotResponse> filter(int pageNo, int pageSize, String branchUuid, String keywords) {
+        if (pageNo < 1 || pageSize < 1) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Page number or page size must be greater than zero"
+            );
+        }
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
+        Page<ParkingLot> parkingLotPage = parkingLotRepository.filterParkingLot(
+                keywords,
+                branchUuid.isEmpty() ? null : branchUuid,
+                pageRequest
+        );
+
+        return parkingLotPage.map(parkingLotMapper::toParkingSlotResponse);
+    }
+
+    @Override
     public List<ParkingLotResponse> createMultipleParkingLot(CreateMultipleSlot createMultipleSlot) {
         List<ParkingLot> createdParkingLots = new ArrayList<>();
 
@@ -66,7 +85,7 @@ public class ParkingLotServiceImpl implements ParkingLotService {
     }
 
     @Override
-    public List<ParkingLotResponse> update(String uuid, ParkingLotRequest parkingLotRequest) {
+    public ParkingLotResponse update(String uuid, ParkingLotRequest parkingLotRequest) {
 
         ParkingLot parkingLot = parkingLotRepository.findByUuid(uuid).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking lot not found!")
@@ -76,50 +95,26 @@ public class ParkingLotServiceImpl implements ParkingLotService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking space not found!")
         );
 
-//        List<ParkingLot> parkingLotList =parkingLotRequest.lotName().stream().map(
-//                lot -> {
-//                    ParkingLot newParkingLot = new ParkingLot();
-//                    newParkingLot.setUuid(UUID.randomUUID().toString());
-//                    newParkingLot.setCreatedAt(LocalDateTime.now());
-//                    newParkingLot.setIsAvailable(true);
-//                    parkingLot.setLotName(lot);
-//                    parkingLot.setParkingSpace(parkingSpace);
-//                    parkingSpace.setLotQty(parkingSpace.getLotQty() + 1);
-//                    parkingSpace.setEmpty(parkingSpace.getEmpty() + 1);
-//                    parkingSpaceRepository.save(parkingSpace);
-//                    parkingLotRepository.save(parkingLot);
-//                    return parkingLot;
-//                }
-//        ).toList();
+        parkingLotMapper.updateFromParkingLotRequest(parkingLotRequest, parkingLot);
+        parkingLot.setParkingSpace(parkingSpace);
+        ParkingLot savedParkingLot = parkingLotRepository.save(parkingLot);
 
-//        return parkingLotList.stream().map(parkingLotMapper::toParkingSlotResponse).toList();
-        return null;
+        return parkingLotMapper.toParkingSlotResponse(savedParkingLot);
     }
 
     @Override
-    public List<ParkingLotResponse> create(CreateParkingLot createParkingLot) {
+    public ParkingLotResponse create(ParkingLotRequest parkingLotRequest) {
 
-        ParkingSpace parkingSpace = parkingSpaceRepository.findByUuid(createParkingLot.parkingSpaceUuid()).orElseThrow(
+        ParkingSpace parkingSpace = parkingSpaceRepository.findByUuid(parkingLotRequest.parkingSpaceUuid()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking space not found!")
         );
-
-        List<ParkingLot> parkingLotList =createParkingLot.lotName().stream().map(
-                lot -> {
-                    ParkingLot parkingLot = new ParkingLot();
-                    parkingLot.setUuid(UUID.randomUUID().toString());
-                    parkingLot.setCreatedAt(LocalDateTime.now());
-                    parkingLot.setIsAvailable(true);
-                    parkingLot.setLotName(lot);
-                    parkingLot.setParkingSpace(parkingSpace);
-                    parkingSpace.setLotQty(parkingSpace.getLotQty() + 1);
-                    parkingSpace.setEmpty(parkingSpace.getEmpty() + 1);
-                    parkingSpaceRepository.save(parkingSpace);
-                    parkingLotRepository.save(parkingLot);
-                    return parkingLot;
-                }
-        ).toList();
-
-        return parkingLotList.stream().map(parkingLotMapper::toParkingSlotResponse).toList();
+        ParkingLot parkingLot = parkingLotMapper.fromParkingLotRequest(parkingLotRequest);
+        parkingLot.setUuid(UUID.randomUUID().toString());
+        parkingLot.setCreatedAt(LocalDateTime.now());
+        parkingLot.setIsAvailable(true);
+        parkingLot.setParkingSpace(parkingSpace);
+        ParkingLot parkingLotSaved = parkingLotRepository.save(parkingLot);
+        return parkingLotMapper.toParkingSlotResponse(parkingLotSaved);
     }
 
     @Override

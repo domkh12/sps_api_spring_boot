@@ -6,10 +6,7 @@ import jakarta.validation.constraints.Size;
 
 public record CreateSite(
         @NotBlank(message = "Site name cannot be blank")
-        @Size(min = 2, max = 500, message = "Site name must be between 3 and 500 characters")
         String siteName,
-        @NotBlank(message = "siteAddress cannot be blank")
-        @Size(max = 500, message = "Site address must be no longer than 500 characters")
         String siteAddress,
         String image,
         @NotNull(message = "City UUID cannot be null")
