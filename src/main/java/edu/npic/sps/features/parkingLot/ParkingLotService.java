@@ -7,7 +7,9 @@ import java.util.List;
 
 public interface ParkingLotService {
 
-    Page<ParkingLotResponse> filter(int pageNo, int pageSize, String branchUuid, String keywords);
+    void deleteParkingSlot(String uuid);
+
+    Page<ParkingLotResponse> filter(int pageNo, int pageSize, List<String> branchUuid, String keywords);
 
     List<ParkingLotResponse> createMultipleParkingLot(CreateMultipleSlot createMultipleSlot);
 

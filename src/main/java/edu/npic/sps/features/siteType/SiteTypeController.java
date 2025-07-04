@@ -19,35 +19,35 @@ public class SiteTypeController {
 
     private final SiteTypeService siteTypeService;
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping("/{uuid}")
     @ResponseStatus(HttpStatus.OK)
     SiteTypeResponse findByUuid(@PathVariable String uuid){
         return siteTypeService.findByUuid(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void delete(@PathVariable String uuid){
         siteTypeService.delete(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{uuid}")
     @ResponseStatus(HttpStatus.CREATED)
     SiteTypeResponse updateByUuid(@PathVariable String uuid, @RequestBody SiteTypeRequest siteTypeRequest){
         return siteTypeService.updateByUuid(uuid, siteTypeRequest);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     SiteTypeResponse create(@Valid @RequestBody SiteTypeRequest siteTypeRequest){
         return siteTypeService.create(siteTypeRequest);
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER' ,'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN' ,'ROLE_MANAGER')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     List<SiteTypeResponse> findAll(){

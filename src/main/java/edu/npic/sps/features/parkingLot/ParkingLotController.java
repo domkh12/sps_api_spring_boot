@@ -18,19 +18,26 @@ public class ParkingLotController {
 
     private final ParkingLotService parkingLotService;
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @DeleteMapping("/{uuid}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void deleteParkingSlot(@PathVariable String uuid) {
+        parkingLotService.deleteParkingSlot(uuid);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @GetMapping("/filter")
     @ResponseStatus(HttpStatus.OK)
     Page<ParkingLotResponse> filter(
             @RequestParam(required = false, defaultValue = "1") int pageNo,
             @RequestParam(required = false, defaultValue = "20") int pageSize,
-            @RequestParam(required = false) String branchUuid,
+            @RequestParam(required = false) List<String> branchUuid,
             @RequestParam(required = false) String keywords
     ) {
         return parkingLotService.filter(pageNo, pageSize, branchUuid, keywords);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     Page<ParkingLotResponse> findAll(
@@ -40,28 +47,28 @@ public class ParkingLotController {
         return parkingLotService.findAll(pageNo, pageSize);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @GetMapping("/{uuid}")
     @ResponseStatus(HttpStatus.OK)
     ParkingLotResponse findByUuid(@PathVariable String uuid) {
         return parkingLotService.findParkingLotByUuid(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{uuid}")
     @ResponseStatus(HttpStatus.CREATED)
     ParkingLotResponse update(@PathVariable String uuid, @RequestBody ParkingLotRequest parkingLotRequest){
         return parkingLotService.update(uuid, parkingLotRequest);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     ParkingLotResponse create(@RequestBody ParkingLotRequest parkingLotRequest){
         return parkingLotService.create(parkingLotRequest);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping("/multiple")
     @ResponseStatus(HttpStatus.CREATED)
     List<ParkingLotResponse> createMultiple(@RequestBody CreateMultipleSlot createMultipleSlot) {

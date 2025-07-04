@@ -19,28 +19,28 @@ public class GenderController {
 
     private final GenderService genderService;
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteByUuid(@PathVariable String uuid){
         genderService.delete(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{uuid}")
     @ResponseStatus(HttpStatus.CREATED)
     GenderResponse updateByUuid(@PathVariable String uuid, @Valid @RequestBody GenderRequest genderRequest){
         return genderService.updateByUuid(uuid, genderRequest);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
     GenderResponse create(@Valid @RequestBody GenderRequest genderRequest){
         return genderService.create(genderRequest);
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     List<GenderResponse> findAll(){

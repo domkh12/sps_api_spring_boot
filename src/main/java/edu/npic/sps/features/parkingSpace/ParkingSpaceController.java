@@ -22,7 +22,7 @@ public class ParkingSpaceController {
 
     private final ParkingSpaceService parkingSpaceService;
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @GetMapping("/filters")
     @ResponseStatus(HttpStatus.OK)
     Page<ParkingSpaceResponse> filter(@RequestParam(required = false, defaultValue = "1") int pageNo,
@@ -33,40 +33,40 @@ public class ParkingSpaceController {
         return parkingSpaceService.filter(pageNo, pageSize, branchUuid, keywords);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/{uuid}")
     @ResponseStatus(HttpStatus.CREATED)
     ParkingSpaceResponse update(@PathVariable String uuid, @RequestBody ParkingSpaceRequest parkingSpaceRequest){
         return parkingSpaceService.update(uuid, parkingSpaceRequest);
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @GetMapping("/list")
     List<ParkingNameResponse> getAllLabels() {
         return parkingSpaceService.getAllLabels();
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @GetMapping("/{uuid}")
     ParkingSpaceResponse findByUuid(@PathVariable String uuid) {
         return parkingSpaceService.findByUuid(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     ParkingSpaceResponse create(@Valid @RequestBody CreateParkingSpace createParkingSpace) {
        return parkingSpaceService.create(createParkingSpace);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void delete(@PathVariable String uuid) {
          parkingSpaceService.delete(uuid);
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     Page<ParkingSpaceResponse> findAll(@RequestParam(required = false, defaultValue = "1") int pageNo,

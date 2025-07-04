@@ -34,10 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -175,6 +172,22 @@ public class VehicleServiceImpl implements VehicleService{
     }
 
     @Override
+    public VehicleResponse getVehicleByUuid(String uuid) {
+        boolean isManager = authUtil.isManagerLoggedUser();
+        List<String> siteUuid = authUtil.loggedUserSites();
+
+        if (!vehicleRepository.existsBySites_UuidInAndUuid(siteUuid, uuid) && isManager){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found in this branch");
+        }
+
+        Vehicle vehicle = vehicleRepository.findByUuid(uuid).orElseThrow(
+                   () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found!")
+        );
+
+        return vehicleMapper.toVehicleResponse(vehicle);
+    }
+
+    @Override
     public VehicleResponse update(String uuid, VehicleRequest vehicleRequest) {
 
         Vehicle vehicle  = vehicleRepository.findByUuid(uuid).orElseThrow(
@@ -215,8 +228,14 @@ public class VehicleServiceImpl implements VehicleService{
             vehicle.setLicensePlateProvince(licensePlateProvince);
         }
 
+        if (vehicleRequest.branchUuid() != null){
+            Site site = siteRepository.findByUuid(vehicleRequest.branchUuid()).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found!")
+            );
+            vehicle.setSites(new ArrayList<>(List.of(site)));
+        }
+
         vehicleMapper.fromVehicleRequest(vehicleRequest, vehicle);
-        System.out.println(vehicle);
         vehicle = vehicleRepository.save(vehicle);
 
         return vehicleMapper.toVehicleResponse(vehicle);
@@ -247,12 +266,9 @@ public class VehicleServiceImpl implements VehicleService{
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "LicensePlateProvince Not Found")
         );
 
-        Site site = siteRepository.findByUuid(verifiedUuid.stream().findFirst().orElseThrow())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Site Not Found"));
-
-        if (!verifiedUuid.contains(site.getUuid())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is not authorized for site");
-        }
+        Site site = siteRepository.findByUuid(createVehicle.branchUuid()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found!")
+        );
 
         Vehicle vehicle = vehicleMapper.fromCreateVehicle(createVehicle);
         vehicle.setUuid(UUID.randomUUID().toString());
@@ -304,9 +320,9 @@ public class VehicleServiceImpl implements VehicleService{
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
         Page<Vehicle> vehicles = Page.empty();
 
-        if(isManager){
+        if(isAdmin){
             vehicles = vehicleRepository.findAll(pageRequest);
-        }else if(isAdmin){
+        }else if(isManager){
             vehicles = vehicleRepository.findBySites_Uuid(sites.stream().findFirst().orElseThrow(), pageRequest);
         }
 
@@ -325,6 +341,8 @@ public class VehicleServiceImpl implements VehicleService{
     @Override
     public Page<VehicleResponse> filter(int pageNo, int pageSize, String keywords, String vehicleTypeId, String branchId) {
         boolean isManager = authUtil.isManagerLoggedUser();
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        List<String> siteUuid = authUtil.loggedUserSites();
 
         if (pageNo < 1){
             throw new ResponseStatusException(
@@ -357,8 +375,10 @@ public class VehicleServiceImpl implements VehicleService{
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
         Page<Vehicle> vehicles = Page.empty();
-        if(isManager){
+        if(isAdmin){
             vehicles = vehicleRepository.filterVehicles(keywords, vehicleTypeIds, branchIds, pageRequest);
+        }else if (isManager){
+            vehicles = vehicleRepository.filterVehicles(keywords, vehicleTypeIds, siteUuid, pageRequest);
         }
 
         return vehicles.map(vehicleMapper::toVehicleResponse);

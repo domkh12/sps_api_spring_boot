@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 
 public interface VehicleService {
 
+    VehicleResponse getVehicleByUuid(String uuid);
+
     VehicleResponse update(String uuid, VehicleRequest vehicleRequest);
 
     VehicleResponse create(CreateVehicle createVehicle);

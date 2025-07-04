@@ -19,28 +19,28 @@ public class SignUpMethodController {
 
     private final SignUpMethodService signUpMethodService;
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteByUuid(@PathVariable String uuid){
         signUpMethodService.delete(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{uuid}")
     @ResponseStatus(HttpStatus.CREATED)
     SignUpMethodResponse updateByUuid(@PathVariable String uuid, @Valid @RequestBody SignupMethodRequest signupMethodRequest){
         return signUpMethodService.updateByUuid(uuid, signupMethodRequest);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     SignUpMethodResponse create(@Valid @RequestBody SignupMethodRequest signupMethodRequest){
         return signUpMethodService.create(signupMethodRequest);
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     List<SignUpMethodResponse> findAll(){

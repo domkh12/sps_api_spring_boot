@@ -22,21 +22,21 @@ public class SiteController {
 
     private final SiteService siteService;
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @GetMapping("/list")
     @ResponseStatus(HttpStatus.OK)
     List<BranchListResponse> listBranches(){
         return siteService.listBranches();
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping("/{uuid}")
     @ResponseStatus(HttpStatus.OK)
     SiteResponse findByUuid(@PathVariable String uuid){
         return siteService.findByUuid(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping("/filter")
     @ResponseStatus(HttpStatus.OK)
     Page<SiteResponse> filter(@RequestParam(required = false, defaultValue = "1") int pageNo,
@@ -48,35 +48,35 @@ public class SiteController {
         return siteService.filter(pageNo, pageSize, keywords, cityId, siteTypeId, companyId);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void delete(@PathVariable String uuid){
         siteService.delete(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/{uuid}")
     @ResponseStatus(HttpStatus.CREATED)
     SiteResponse update(@PathVariable String uuid, @RequestBody @Valid SiteRequest siteRequest){
         return siteService.update(uuid, siteRequest);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     SiteResponse createSite(@Valid @RequestBody CreateSite createSite){
         return siteService.createSite(createSite);
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping("/all")
     @ResponseStatus(HttpStatus.OK)
     List<SiteResponse> findAllByUserRole(){
         return siteService.findAllByUserRole();
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     Page<SiteResponse> findAll(

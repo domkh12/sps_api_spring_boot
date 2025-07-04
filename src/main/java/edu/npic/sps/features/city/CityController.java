@@ -20,28 +20,28 @@ public class CityController {
 
     private final CityService cityService;
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteByUuid(@PathVariable String uuid){
         cityService.delete(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{uuid}")
     @ResponseStatus(HttpStatus.CREATED)
     CityResponse updateByUuid(@PathVariable String uuid, @Valid @RequestBody CityRequest cityRequest){
         return cityService.updateByUuid(uuid, cityRequest);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     CityResponse create(@Valid @RequestBody CityRequest cityRequest){
         return cityService.create(cityRequest);
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<CityResponse> findAll(){

@@ -20,6 +20,13 @@ public class VehicleController {
 
     private final VehicleService vehicleService;
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @GetMapping("/uuid/{uuid}")
+    @ResponseStatus(HttpStatus.OK)
+    VehicleResponse getVehicleByUuid(@PathVariable String uuid) {
+        return vehicleService.getVehicleByUuid(uuid);
+    }
+
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping("/check-out")
     @ResponseStatus(HttpStatus.CREATED)
@@ -47,7 +54,7 @@ public class VehicleController {
         return vehicleService.checkIn(numberPlate, provincePlate, vehicleModel, vehicleMake, color, space, lot);
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @GetMapping("/filters")
     @ResponseStatus(HttpStatus.OK)
     Page<VehicleResponse> filter(@RequestParam(required = false, defaultValue = "1") int pageNo,
@@ -59,28 +66,28 @@ public class VehicleController {
         return vehicleService.filter(pageNo, pageSize, keywords, vehicleTypeId, branchId);
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void delete(@PathVariable String uuid) {
         vehicleService.delete(uuid);
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @PatchMapping("/{uuid}")
     @ResponseStatus(HttpStatus.CREATED)
     VehicleResponse update(@PathVariable String uuid, @Valid @RequestBody VehicleRequest vehicleRequest){
         return vehicleService.update(uuid, vehicleRequest);
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     VehicleResponse create(@Valid @RequestBody CreateVehicle createVehicle){
         return vehicleService.create(createVehicle);
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     Page<VehicleResponse> findAll(@RequestParam(required = false,defaultValue = "1") int pageNo,

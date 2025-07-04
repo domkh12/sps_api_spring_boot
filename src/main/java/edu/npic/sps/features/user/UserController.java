@@ -36,7 +36,7 @@ public class UserController {
        return userService.connectedUsers(uuid, isOnlineRequest);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{uuid}")
     UserDetailResponse findByUuid(@PathVariable String uuid) {

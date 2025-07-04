@@ -40,6 +40,9 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
 
     @Override
     public Page<ParkingSpaceResponse> filter(int pageNo, int pageSize, String branchUuid, String keywords) {
+        boolean isAdmin  = authUtil.isAdminLoggedUser();
+        boolean isManager = authUtil.isManagerLoggedUser();
+        List<String> sites = authUtil.loggedUserSites();
 
         if (pageNo < 1 || pageSize < 1) {
             throw new ResponseStatusException(
@@ -57,7 +60,12 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
 
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
-        Page<ParkingSpace> parkingSpaces = parkingSpaceRepository.filterParkingSpace(keywords, branchUuids, pageable);
+        Page<ParkingSpace> parkingSpaces = Page.empty();
+        if (isAdmin) {
+            parkingSpaces = parkingSpaceRepository.filterParkingSpace(keywords, branchUuids, pageable);
+        }else  if (isManager) {
+            parkingSpaces = parkingSpaceRepository.filterParkingSpace(keywords, sites, pageable);
+        }
 
         return parkingSpaces.map(parkingSpaceMapper::toParkingSpaceResponse);
     }
@@ -73,7 +81,6 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
             Site site = siteRepository.findByUuid(parkingSpaceRequest.siteUuid()).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found!")
             );
-
             parkingSpace.setSite(site);
         }
 
@@ -103,13 +110,18 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
 
     @Override
     public ParkingSpaceResponse findByUuid(String uuid) {
+        boolean isManager = authUtil.isManagerLoggedUser();
+        List<String> sites = authUtil.loggedUserSites();
+
+        if (!parkingSpaceRepository.existsBySite_UuidInAndUuid(sites, uuid) && isManager){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking space not found in this branch");
+        }
 
         ParkingSpace parkingSpace = parkingSpaceRepository.findByUuid(uuid).orElseThrow(
                 () -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Parking not found!")
         );
-
 
         return parkingSpaceMapper.toParkingSpaceResponse(parkingSpace);
     }
@@ -131,10 +143,9 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
         Page<ParkingSpace> parkingSpaces = Page.empty();
 
-        if (isManager) {
+        if (isAdmin) {
            parkingSpaces = parkingSpaceRepository.findAll(pageRequest);
-        }
-        else if (isAdmin){
+        }else if (isManager){
             parkingSpaces = parkingSpaceRepository.findParkingSpacesBySiteUuid(sites.stream().findFirst().orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Site not found!"
             )), pageRequest);
@@ -147,17 +158,17 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
     public List<ParkingNameResponse> getAllLabels() {
         boolean isManager = authUtil.isManagerLoggedUser();
         boolean isAdmin = authUtil.isAdminLoggedUser();
-        boolean isUser = authUtil.isUserLoggedUser();
+
         List<String> sites = authUtil.loggedUserSites();
 
         List<ParkingSpace> parkingSpaceList = new ArrayList<>();
 
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
 
-        if (isManager) {
+        if (isAdmin) {
             parkingSpaceList = parkingSpaceRepository.findAll(sort);
         }
-        else if (isAdmin || isUser){
+        else if (isManager){
             parkingSpaceList = parkingSpaceRepository.findBySiteUuid(sites.stream().findFirst().orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Site not found!"
             )));

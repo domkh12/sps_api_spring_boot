@@ -43,7 +43,7 @@ public class Site {
     @ManyToMany(mappedBy = "sites")
     private List<User> users;
 
-    @OneToMany(mappedBy = "site", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "site")
     private List<ParkingSpace> parkingSpaces;
 
     @ManyToMany(mappedBy = "sites")

@@ -16,6 +16,9 @@ import java.util.Optional;
 @Repository
 public interface ParkingSpaceRepository extends JpaRepository<ParkingSpace, Integer> {
 
+    @Query("select (count(p) > 0) from ParkingSpace p where p.site.uuid in ?1 and p.uuid = ?2")
+    boolean existsBySite_UuidInAndUuid(Collection<String> uuids, String uuid);
+
     @Transactional
     @Modifying
     @Query(value = "UPDATE parking_lots SET parking_space_id = null WHERE parking_space_id IN (SELECT id FROM parking_spaces p WHERE p.uuid =?1 ); DELETE FROM parking_spaces p where p.uuid = ?1", nativeQuery = true)

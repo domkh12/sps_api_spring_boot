@@ -32,10 +32,10 @@ public class ParkingSpace {
     private Boolean isDeleted;
 
     // relationship
-    @OneToMany(mappedBy = "parkingSpace", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "parkingSpace")
     private List<ParkingLot> parkingLots;
 
-    @OneToMany(mappedBy = "parkingSpace", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "parkingSpace")
     private List<ParkingLotDetail> parkingLotDetail;
 
     @ManyToOne

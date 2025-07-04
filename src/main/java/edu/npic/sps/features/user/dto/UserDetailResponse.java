@@ -1,5 +1,6 @@
 package edu.npic.sps.features.user.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import edu.npic.sps.features.gender.dto.GenderResponse;
 import edu.npic.sps.features.role.dto.RoleResponse;
 import edu.npic.sps.features.site.dto.SiteResponse;
@@ -19,6 +20,7 @@ public record UserDetailResponse(
         String email,
         String phoneNumber,
         String address,
+        @JsonFormat(pattern = "dd/MMM/yyyy hh:mma")
         LocalDateTime createdAt,
         List<RoleResponse> roles,
         String profileImage,

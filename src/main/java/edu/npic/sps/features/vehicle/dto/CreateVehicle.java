@@ -23,6 +23,8 @@ public record CreateVehicle(
         @NotBlank(message = "licensePlateTypeId is required")
         String licensePlateTypeId,
         @NotBlank(message = "LicensePlateProvinceId is required!")
-        String licensePlateProvinceId
+        String licensePlateProvinceId,
+        @NotBlank(message = "branchUuid is required")
+        String branchUuid
 ) {
 }

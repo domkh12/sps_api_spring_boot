@@ -19,28 +19,28 @@ public class CompanyTypeController {
 
     private final CompanyTypeService companyTypeService;
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{uuid}")
     void delete(@PathVariable String uuid){
         companyTypeService.delete(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @PutMapping("/{uuid}")
     CompanyTypeResponse update(@PathVariable String uuid, @Valid @RequestBody CompanyTypeRequest companyTypeRequest){
         return companyTypeService.update(uuid, companyTypeRequest);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     CompanyTypeResponse create(@Valid @RequestBody CompanyTypeRequest companyTypeRequest){
         return companyTypeService.create(companyTypeRequest);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     List<CompanyTypeResponse> findAll(){

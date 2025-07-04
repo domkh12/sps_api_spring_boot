@@ -21,7 +21,7 @@ public class CompanyController {
 
     private final CompanyService companyService;
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping("/filters")
     @ResponseStatus(HttpStatus.OK)
     Page<CompanyResponse> filterCompany(@RequestParam(required = false, defaultValue = "") String keywords,
@@ -32,35 +32,35 @@ public class CompanyController {
         return companyService.filterCompany(keywords, companyTypeUuid, cityUuid, pageSize, pageNo);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{uuid}")
     @ResponseStatus(HttpStatus.CREATED)
     CompanyResponse update(@PathVariable String uuid,@Valid @RequestBody CompanyRequest companyRequest) {
         return companyService.update(uuid, companyRequest);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping("/{uuid}")
     @ResponseStatus(HttpStatus.OK)
     CompanyResponse findByUuid(@PathVariable String uuid) {
         return companyService.findByUuid(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void delete(@PathVariable String uuid) {
         companyService.delete(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     CompanyResponse createCompany(@Valid @RequestBody CompanyRequest companyRequest) {
         return companyService.createCompany(companyRequest);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     Page<CompanyResponse> findAll(
@@ -70,8 +70,8 @@ public class CompanyController {
         return companyService.findAll(pageNo, pageSize);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
-    @GetMapping("/names")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/list")
     List<CompanyNameResponse> findAllNames() {
         return companyService.findAllNames();
     }

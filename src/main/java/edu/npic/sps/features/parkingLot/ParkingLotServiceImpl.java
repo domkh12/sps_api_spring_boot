@@ -7,6 +7,7 @@ import edu.npic.sps.features.parkingLot.dto.*;
 import edu.npic.sps.features.parkingLotDetail.ParkingLotDetailRepository;
 import edu.npic.sps.features.parkingSpace.ParkingSpaceRepository;
 import edu.npic.sps.mapper.ParkingLotMapper;
+import edu.npic.sps.util.AuthUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,14 +26,34 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ParkingLotServiceImpl implements ParkingLotService {
     private final ParkingLotRepository parkingLotRepository;
-
     private final ParkingLotMapper parkingLotMapper;
     private final ParkingLotDetailRepository parkingLotDetailRepository;
     private final SimpMessagingTemplate simpMessageTemplate;
     private final ParkingSpaceRepository parkingSpaceRepository;
+    private final AuthUtil authUtil;
 
     @Override
-    public Page<ParkingLotResponse> filter(int pageNo, int pageSize, String branchUuid, String keywords) {
+    public void deleteParkingSlot(String uuid) {
+        ParkingLot parkingLot = parkingLotRepository.findByUuid(uuid).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking lot not found!")
+        );
+
+        parkingLotRepository.deleteByUuid(parkingLot.getUuid());
+        ParkingSpace parkingSpace = parkingLot.getParkingSpace();
+        parkingSpace.setLotQty(parkingSpace.getLotQty() - 1);
+        parkingSpace.setEmpty(parkingSpace.getEmpty() - 1);
+        parkingSpaceRepository.save(parkingSpace);
+    }
+
+    @Override
+    public Page<ParkingLotResponse>
+
+
+    filter(int pageNo, int pageSize, List<String> branchUuid, String keywords) {
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        boolean isManager = authUtil.isManagerLoggedUser();
+        List<String> siteUuid = authUtil.loggedUserSites();
+
         if (pageNo < 1 || pageSize < 1) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -41,11 +62,20 @@ public class ParkingLotServiceImpl implements ParkingLotService {
         }
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
-        Page<ParkingLot> parkingLotPage = parkingLotRepository.filterParkingLot(
-                keywords,
-                branchUuid.isEmpty() ? null : branchUuid,
-                pageRequest
-        );
+        Page<ParkingLot> parkingLotPage = Page.empty();
+        if (isAdmin) {
+            parkingLotPage = parkingLotRepository.filterParkingLot(
+                    keywords,
+                    branchUuid.isEmpty() ? null : branchUuid,
+                    pageRequest
+            );
+        }else if (isManager) {
+            parkingLotPage = parkingLotRepository.filterParkingLot(
+                    keywords,
+                    siteUuid.isEmpty() ? null : siteUuid,
+                    pageRequest
+            );
+        }
 
         return parkingLotPage.map(parkingLotMapper::toParkingSlotResponse);
     }
@@ -78,8 +108,16 @@ public class ParkingLotServiceImpl implements ParkingLotService {
 
     @Override
     public ParkingLotResponse findParkingLotByUuid(String uuid) {
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        boolean isManager = authUtil.isManagerLoggedUser();
+        List<String> siteUuid = authUtil.loggedUserSites();
+
+        if (!parkingLotRepository.existsByParkingSpace_Site_UuidInAndUuid(siteUuid, uuid) && isManager) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking slot not found!");
+        }
+
         ParkingLot parkingLot = parkingLotRepository.findByUuid(uuid).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking lot not found!")
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking slot not found!")
         );
         return parkingLotMapper.toParkingSlotResponse(parkingLot);
     }
@@ -108,17 +146,31 @@ public class ParkingLotServiceImpl implements ParkingLotService {
         ParkingSpace parkingSpace = parkingSpaceRepository.findByUuid(parkingLotRequest.parkingSpaceUuid()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking space not found!")
         );
+
+        if (parkingLotRepository.existsByLotNameIgnoreCaseAndParkingSpace_Uuid(parkingLotRequest.lotName(), parkingLotRequest.parkingSpaceUuid())) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Parking lot with this name already exists in the selected parking space"
+            );
+        }
+
         ParkingLot parkingLot = parkingLotMapper.fromParkingLotRequest(parkingLotRequest);
         parkingLot.setUuid(UUID.randomUUID().toString());
         parkingLot.setCreatedAt(LocalDateTime.now());
         parkingLot.setIsAvailable(true);
         parkingLot.setParkingSpace(parkingSpace);
         ParkingLot parkingLotSaved = parkingLotRepository.save(parkingLot);
+        parkingSpace.setLotQty(parkingSpace.getLotQty() + 1);
+        parkingSpace.setEmpty(parkingSpace.getEmpty() + 1);
+        parkingSpaceRepository.save(parkingSpace);
         return parkingLotMapper.toParkingSlotResponse(parkingLotSaved);
     }
 
     @Override
     public Page<ParkingLotResponse> findAll(int pageNo, int pageSize) {
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        boolean isManager = authUtil.isManagerLoggedUser();
+        List<String> branchUuid = authUtil.loggedUserSites();
 
         if (pageNo < 1 || pageSize < 1) {
             throw new ResponseStatusException(
@@ -129,7 +181,12 @@ public class ParkingLotServiceImpl implements ParkingLotService {
 
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
-        Page<ParkingLot> parkingSlotPage = parkingLotRepository.findAll(pageRequest);
+        Page<ParkingLot> parkingSlotPage = Page.empty();
+        if (isAdmin) {
+            parkingSlotPage = parkingLotRepository.findAll(pageRequest);
+        }else if (isManager) {
+            parkingSlotPage = parkingLotRepository.findByParkingSpace_Site_UuidIn(branchUuid, pageRequest);
+        }
         return parkingSlotPage.map(parkingLotMapper::toParkingSlotResponse);
 
     }

@@ -25,7 +25,7 @@ public class ParkingLot {
     private LocalDateTime createdAt;
     private String image;
 
-    @OneToMany(mappedBy = "parkingLot", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "parkingLot")
     private List<ParkingLotDetail> parkingLotDetail;
 
     @ManyToOne

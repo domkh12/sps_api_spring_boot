@@ -100,9 +100,9 @@ public class UserServiceImpl implements UserService{
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         List<User> user = new ArrayList<>();
 
-        if (isManager) {
+        if (isAdmin) {
             user = userRepository.findAll(sort);
-        }else if(isAdmin) {
+        }else if(isManager) {
             user = userRepository.findAllFullNameBySite(loggedUserUuid ,verifiedUuid.stream().findFirst().orElseThrow());
         }
 
@@ -166,8 +166,7 @@ public class UserServiceImpl implements UserService{
         String loggedUserUuid = authUtil.loggedUserUuid();
         boolean isManager = authUtil.isManagerLoggedUser();
         boolean isAdmin =  authUtil.isAdminLoggedUser();
-        List<String> verifiedUuid = authUtil.loggedUserSites();
-        log.info("roleId: {}", status);
+        List<String> siteUuid = authUtil.loggedUserSites();
 
         if (pageNo < 1 || pageSize < 1) {
             throw new ResponseStatusException(
@@ -201,21 +200,14 @@ public class UserServiceImpl implements UserService{
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
         Page<User> users = Page.empty();
 
-        if (isManager){
+        if (isAdmin){
             if (!keyword.isEmpty() || roleIds != null || signUpMethodIds != null || !status.isEmpty() || branchIds != null || !branchIds.isEmpty()){
                 users = userRepository.findUserByFilter(loggedUserUuid, keyword, roleIds, signUpMethodIds, status, branchIds, pageRequest);
             }
         }
-//        else if(isAdmin){
-//            if (!query.isEmpty()){
-//                users = userRepository.findUserByRoleAdminSearchTerm(
-//                        loggedUserUuid,
-//                        verifiedUuid.stream().findFirst().orElseThrow(),
-//                        query,
-//                        pageRequest
-//                );
-//            }
-//        }
+        else if(isManager){
+            users = userRepository.filterUserByManager(loggedUserUuid, keyword, roleIds, signUpMethodIds, status, siteUuid, pageRequest);
+        }
         return users.map(userMapper::toUserDetailResponse);
     }
 
@@ -225,7 +217,7 @@ public class UserServiceImpl implements UserService{
         boolean isAdmin = authUtil.isAdminLoggedUser();
         List<String> sitesLogged = authUtil.loggedUserSites();
 
-        if (isManager){
+        if (isAdmin){
             User user = userRepository.findByUuid(uuid).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
             );
@@ -260,7 +252,7 @@ public class UserServiceImpl implements UserService{
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Phone number already exists");
         }
 
-        if(isManager){
+        if(isAdmin){
             if (updateUserRequest.profileImage() != null) {
                 deleteImageFile(user.getProfileImage());
             } else if (updateUserRequest.bannerImage() != null) {
@@ -354,7 +346,7 @@ public class UserServiceImpl implements UserService{
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password does not match");
         }
 
-        if (isManager){
+        if (isAdmin){
 
         Gender gender = genderRepository.findByUuid(createUser.genderId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Gender not found")
@@ -391,7 +383,7 @@ public class UserServiceImpl implements UserService{
             sendEmailVerification(user, 30);
         }
 
-        }else if (isAdmin){
+        }else if (isManager){
 
             Gender gender = genderRepository.findByUuid(createUser.genderId()).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Gender not found")
@@ -466,14 +458,14 @@ public class UserServiceImpl implements UserService{
         Page<User> users = Page.empty();
         Map<String, Integer> statusCount = new HashMap<>();
 
-            if (isManager){
+            if (isAdmin){
                     users = userRepository.findByUuidNot(loggedUserUuid, pageRequest);
                     statusCount.put("Active", userRepository.countActiveUser(loggedUserUuid));
                     statusCount.put("Pending", userRepository.countPendingUser());
                     statusCount.put("Banned", userRepository.countBannedUser());
             }
-            else if(isAdmin){
-                    users = userRepository.findUserByRoleAdmin(
+            else if(isManager){
+                    users = userRepository.findUserByRoleManager(
                             loggedUserUuid ,
                             sites.stream().findFirst().orElseThrow(),
                             pageRequest);

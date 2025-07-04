@@ -41,7 +41,27 @@ public class SiteServiceImpl implements SiteService{
 
     @Override
     public List<BranchListResponse> listBranches() {
-        List<Site> sites = siteRepository.findAll();
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        boolean isManager = authUtil.isManagerLoggedUser();
+        String userUuid = authUtil.loggedUserUuid();
+
+        List<String> branchUuids = new ArrayList<>();
+        if (isManager) {
+            User user = userRepository.findByUuid(userUuid).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
+            );
+            branchUuids = user.getSites().stream()
+                    .map(Site::getUuid)
+                    .toList();
+        }
+
+        List<Site> sites = new ArrayList<>();
+        if (isAdmin) {
+            sites = siteRepository.findAll();
+        }else if (isManager) {
+            sites = siteRepository.findListByUuid(branchUuids);
+        }
+
         return sites.stream().map(siteMapper::toBranchListResponse).toList();
     }
 
@@ -190,9 +210,9 @@ public class SiteServiceImpl implements SiteService{
         boolean isAdmin = authUtil.isAdminLoggedUser();
         boolean isManager = authUtil.isManagerLoggedUser();
         List<Site> sites = new ArrayList<>();
-        if(isManager) {
+        if(isAdmin) {
             sites = siteRepository.findAll();
-        }else if(isAdmin){
+        }else if(isManager){
             sites = user.getSites().stream().map(
                     site -> siteRepository.findByUuid(site.getUuid()).orElseThrow()
             ).toList();
@@ -217,9 +237,9 @@ public class SiteServiceImpl implements SiteService{
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
         Page<Site> sites = Page.empty();
-        if (isManager){
+        if (isAdmin){
             sites = siteRepository.findAll(pageRequest);
-        }else if(isAdmin){
+        }else if(isManager){
             sites = siteRepository.findByUsers_Uuid(userUuid, pageRequest);
         }
 

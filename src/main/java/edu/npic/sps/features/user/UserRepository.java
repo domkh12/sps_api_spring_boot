@@ -60,7 +60,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("""
             select u from User u inner join u.sites sites inner join u.roles roles
             where u.uuid <> ?1 and sites.uuid = ?2 and roles.name = 'USER' and size(roles) = 1""")
-    Page<User> findUserByRoleAdmin(String uuid, String uuid1, Pageable pageable);
+    Page<User> findUserByRoleManager(String uuid, String uuid1, Pageable pageable);
 
     @Query("""
             select u from User u inner join u.sites sites inner join u.roles roles
@@ -76,6 +76,22 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             and (sites.uuid in ?6 or ?6 is null)
             """)
     Page<User> findUserByFilter(String uuid, String keyword, Collection<String> uuids, Collection<String> uuids1, String status, Collection<String> branchId, Pageable pageable);
+
+    @Query("""
+            select u from User u inner join u.sites sites inner join u.roles roles
+            where u.uuid <> ?1
+            and (
+            upper(u.fullName) like upper(concat('%', ?2, '%'))
+            or upper(u.email) like upper(concat('%', ?2, '%'))
+            or upper(u.phoneNumber) like upper(concat('%', ?2, '%'))
+            )
+            and (roles.uuid in ?3 or ?3 is null)
+            and (u.signUpMethod.uuid in ?4 or ?4 is null)
+            and (upper(u.status) = upper(?5) or ?5 = '')
+            and (sites.uuid in ?6 or ?6 is null)
+            and roles.name = 'USER' and size(roles) = 1
+            """)
+    Page<User> filterUserByManager(String uuid, String keyword, Collection<String> uuids, Collection<String> uuids1, String status, Collection<String> branchId, Pageable pageable);
 
     @Query("""
             select u from User u inner join u.sites sites inner join u.roles roles

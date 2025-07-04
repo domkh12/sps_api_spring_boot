@@ -45,7 +45,7 @@ public class AnalysisServiceImpl implements AnalysisService{
 
         HashMap<String, List<String>> chartData = new HashMap<>();
         Sort sortUserByCreatedAd = Sort.by(Sort.Direction.ASC, "createdAt");
-        if (isManager) {
+        if (isAdmin) {
 
             List<User> users = userRepository.findAll(sortUserByCreatedAd);
             totalUserCount = userRepository.count();
@@ -78,7 +78,7 @@ public class AnalysisServiceImpl implements AnalysisService{
                     .totalSiteCount(totalSiteCount)
                     .chartData(chartData)
                     .build();
-        } else if (isAdmin) {
+        } else if (isManager) {
             List<ParkingSpace> parkingSpaces = parkingSpaceRepository.findBySiteUuid(sites.stream().findFirst().orElseThrow());
             totalUserCount = userRepository.countBySites_Uuid(sites.stream().findFirst().orElseThrow());
             totalVehicleCount = vehicleRepository.countBySites_Uuid(sites.stream().findFirst().orElseThrow());

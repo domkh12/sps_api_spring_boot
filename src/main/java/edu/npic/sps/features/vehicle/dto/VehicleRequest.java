@@ -14,7 +14,8 @@ public record VehicleRequest(
         String userId,
         String vehicleTypeId,
         String licensePlateTypeId,
-        String licensePlateProvinceId
+        String licensePlateProvinceId,
+        String branchUuid
 
 ) {
 }

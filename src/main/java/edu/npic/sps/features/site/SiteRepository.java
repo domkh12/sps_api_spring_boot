@@ -15,6 +15,10 @@ import java.util.Optional;
 
 @Repository
 public interface SiteRepository extends JpaRepository<Site, Integer> {
+
+    @Query("select s from Site s where s.uuid in ?1")
+    List<Site> findListByUuid(Collection<String> uuids);
+
     @Transactional
     @Modifying
     @Query(value = "UPDATE parking_spaces SET site_id = null WHERE site_id IN (SELECT id FROM branches b WHERE b.uuid = ?1); DELETE FROM users_sites WHERE site_id IN (SELECT id FROM branches b WHERE b.uuid = ?1); DELETE FROM vehicles_sites WHERE site_id IN (SELECT id FROM branches b WHERE b.uuid = ?1); DELETE FROM branches b WHERE b.uuid = ?1", nativeQuery = true)
