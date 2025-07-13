@@ -24,6 +24,7 @@ public interface ParkingSpaceRepository extends JpaRepository<ParkingSpace, Inte
     @Query(value = "UPDATE parking_lots SET parking_space_id = null WHERE parking_space_id IN (SELECT id FROM parking_spaces p WHERE p.uuid =?1 ); DELETE FROM parking_spaces p where p.uuid = ?1", nativeQuery = true)
     void deleteByUuid(String uuid);
 
+    @Query("select p from ParkingSpace p where upper(p.label) = upper(?1)")
     Optional<ParkingSpace> findByLabelIgnoreCase(String label);
 
     long countBySite_Uuid(String uuid);

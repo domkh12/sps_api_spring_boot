@@ -10,6 +10,8 @@ import java.util.List;
 
 public interface VehicleTypeService {
 
+    VehicleTypeResponse findByUuid(String uuid);
+
     VehicleTypeResponse update(String uuid, UpdateRequest updateRequest);
 
     void deleteByUuid(String uuid);

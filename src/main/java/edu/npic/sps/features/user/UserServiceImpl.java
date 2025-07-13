@@ -201,9 +201,7 @@ public class UserServiceImpl implements UserService{
         Page<User> users = Page.empty();
 
         if (isAdmin){
-            if (!keyword.isEmpty() || roleIds != null || signUpMethodIds != null || !status.isEmpty() || branchIds != null || !branchIds.isEmpty()){
-                users = userRepository.findUserByFilter(loggedUserUuid, keyword, roleIds, signUpMethodIds, status, branchIds, pageRequest);
-            }
+            users = userRepository.findUserByFilter(loggedUserUuid, keyword, roleIds, signUpMethodIds, status, branchIds, pageRequest);
         }
         else if(isManager){
             users = userRepository.filterUserByManager(loggedUserUuid, keyword, roleIds, signUpMethodIds, status, siteUuid, pageRequest);

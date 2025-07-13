@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 public interface LicensePlateProvinceService {
+    LicensePlateProvinceResponse findByUuid(String uuid);
+
     void delete(String uuid);
 
     LicensePlateProvinceResponse updateByUuid(String uuid, @Valid LicensePlateProvinceRequest licensePlateProvinceRequest);

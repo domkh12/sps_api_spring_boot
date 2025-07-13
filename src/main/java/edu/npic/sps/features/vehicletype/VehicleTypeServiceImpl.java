@@ -25,14 +25,25 @@ public class VehicleTypeServiceImpl implements VehicleTypeService{
     private final VehicleTypeMapper vehicleTypeMapper;
 
     @Override
+    public VehicleTypeResponse findByUuid(String uuid) {
+        VehicleType vehicleType = vehicleTypeRepository.findByUuid(uuid).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle type not found!")
+        );
+        return vehicleTypeMapper.toVehicleTypeResponse(vehicleType);
+    }
+
+    @Override
     public VehicleTypeResponse update(String uuid, UpdateRequest updateRequest) {
+
+        if (vehicleTypeRepository.existsByNameIgnoreCaseAndUuidNot(updateRequest.name(), uuid)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Vehicle type already exists!");
+        }
 
         VehicleType vehicleType = vehicleTypeRepository.findByUuid(uuid).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle type not found")
         );
 
         vehicleTypeMapper.fromUpdateRequest(updateRequest, vehicleType);
-//        vehicleType.setName(vehicleType.getName());
         vehicleTypeRepository.save(vehicleType);
 
         return vehicleTypeMapper.toVehicleTypeResponse(vehicleType);
@@ -53,7 +64,7 @@ public class VehicleTypeServiceImpl implements VehicleTypeService{
     @Override
     public VehicleTypeResponse createNew(CreateVehicleType createVehicleType) {
 
-        if (vehicleTypeRepository.existsByAlias(createVehicleType.alias())){
+        if (vehicleTypeRepository.existsByAlias(createVehicleType.name())){
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Vehicle type already exists!");
         }
 

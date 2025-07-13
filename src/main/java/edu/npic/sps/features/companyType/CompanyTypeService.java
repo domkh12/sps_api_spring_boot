@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 public interface CompanyTypeService {
+    CompanyTypeResponse findByUuid(String uuid);
+
     void delete(String uuid);
 
     CompanyTypeResponse update(String uuid, @Valid CompanyTypeRequest companyTypeRequest);

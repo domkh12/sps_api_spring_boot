@@ -19,21 +19,28 @@ public class LicensePlateProvinceController {
 
     private final LicensePlateProvinceService licensePlateProvinceService;
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/{uuid}")
+    @ResponseStatus(HttpStatus.OK)
+    LicensePlateProvinceResponse findByUuid(@PathVariable String uuid) {
+        return licensePlateProvinceService.findByUuid(uuid);
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteByUuid(@PathVariable String uuid){
         licensePlateProvinceService.delete(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{uuid}")
     @ResponseStatus(HttpStatus.CREATED)
     LicensePlateProvinceResponse updateByUuid(@PathVariable String uuid, @Valid @RequestBody LicensePlateProvinceRequest licensePlateProvinceRequest){
         return licensePlateProvinceService.updateByUuid(uuid, licensePlateProvinceRequest);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     LicensePlateProvinceResponse create(@Valid @RequestBody LicensePlateProvinceRequest licensePlateProvinceRequest){

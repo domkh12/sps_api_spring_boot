@@ -22,9 +22,16 @@ public class VehicleTypeController {
 
     private final VehicleTypeService vehicleTypeService;
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")    
+    @GetMapping("/{uuid}")
+    @ResponseStatus(HttpStatus.OK)
+    VehicleTypeResponse findByUuid(@PathVariable String uuid){
+        return vehicleTypeService.findByUuid(uuid);
+    }
+
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PatchMapping("/{uuid}")
+    @PutMapping("/{uuid}")
     VehicleTypeResponse update(@PathVariable String uuid, @RequestBody UpdateRequest updateRequest){
         return vehicleTypeService.update(uuid, updateRequest);
     }

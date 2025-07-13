@@ -10,6 +10,9 @@ import java.util.Optional;
 
 public interface VehicleTypeRepository extends JpaRepository<VehicleType, Integer> {
 
+    @Query("select (count(v) > 0) from VehicleType v where upper(v.name) = upper(?1) and v.uuid <> ?2")
+    boolean existsByNameIgnoreCaseAndUuidNot(String name, String uuid);
+
     Optional<VehicleType> findByUuid(String uuid);
     Boolean existsByAlias(String alias);
     Optional<VehicleType> findByAlias(String alias);

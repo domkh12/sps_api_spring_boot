@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Setter
@@ -24,7 +25,10 @@ public class Gender implements Serializable {
     private Integer id;
     @Column(nullable = false, unique = true)
     private String uuid;
+    @Column(nullable = false, unique = true)
     private String gender;
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "gender")
     List<User> users;

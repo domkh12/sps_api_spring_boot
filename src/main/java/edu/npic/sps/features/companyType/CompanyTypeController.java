@@ -20,6 +20,13 @@ public class CompanyTypeController {
     private final CompanyTypeService companyTypeService;
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/{uuid}")
+    CompanyTypeResponse findByUuid(@PathVariable String uuid){
+        return companyTypeService.findByUuid(uuid);
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{uuid}")
     void delete(@PathVariable String uuid){

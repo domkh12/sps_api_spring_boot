@@ -5,6 +5,7 @@ import edu.npic.sps.features.companyType.dto.CompanyTypeRequest;
 import edu.npic.sps.features.companyType.dto.CompanyTypeResponse;
 import edu.npic.sps.mapper.CompanyTypeMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,6 +22,14 @@ public class CompanyTypeServiceImpl implements CompanyTypeService {
     private final CompanyTypeMapper companyTypeMapper;
 
     @Override
+    public CompanyTypeResponse findByUuid(String uuid) {
+        CompanyType companyType = companyTypeRepository.findByUuid(uuid).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company type not found!")
+        );
+        return companyTypeMapper.toCompanyTypeResponse(companyType);
+    }
+
+    @Override
     public void delete(String uuid) {
         CompanyType companyType = companyTypeRepository.findByUuid(uuid).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company type not found!")
@@ -33,7 +42,7 @@ public class CompanyTypeServiceImpl implements CompanyTypeService {
         CompanyType companyType = companyTypeRepository.findByUuid(uuid).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company type not found!")
         );
-        if (companyTypeRepository.existsByNameIgnoreCase(companyTypeRequest.name().trim())){
+        if (companyTypeRepository.existsByNameIgnoreCaseAndUuidNot(companyTypeRequest.name().trim(), uuid)){
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Company type name already exists!");
         }
         companyTypeMapper.updateFromCompanyTypeRequest(companyTypeRequest, companyType);
@@ -54,7 +63,8 @@ public class CompanyTypeServiceImpl implements CompanyTypeService {
 
     @Override
     public List<CompanyTypeResponse> findAll() {
-        List<CompanyType> companyTypes = companyTypeRepository.findAll();
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        List<CompanyType> companyTypes = companyTypeRepository.findAll(sort);
         return companyTypes.stream().map(companyTypeMapper::toCompanyTypeResponse).toList();
     }
 }

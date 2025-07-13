@@ -12,6 +12,9 @@ import java.util.Optional;
 @Repository
 public interface LicensePlateTypeRepository extends JpaRepository<LicensePlateType, Integer> {
 
+    @Query("select (count(l) > 0) from LicensePlateType l where upper(l.name) = upper(?1) and l.uuid <> ?2")
+    boolean existsByNameIgnoreCaseAndUuidNot(String name, String uuid);
+
     @Transactional
     @Modifying
     @Query(value = "UPDATE vehicles SET license_plate_type_id = null WHERE license_plate_type_id IN (SELECT id FROM license_plate_types WHERE uuid = ?1); DELETE FROM license_plate_types WHERE uuid = ?1", nativeQuery = true)

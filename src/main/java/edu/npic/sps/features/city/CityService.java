@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface CityService {
 
+    CityResponse findByUuid(String uuid);
+
     void delete(String uuid);
 
     CityResponse create(@Valid CityRequest cityRequest);

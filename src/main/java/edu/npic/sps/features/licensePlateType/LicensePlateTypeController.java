@@ -18,21 +18,28 @@ public class LicensePlateTypeController {
 
     private final LicensePlateTypeService licensePlateTypeService;
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/{uuid}")
+    @ResponseStatus(HttpStatus.OK)
+    LicensePlateTypeResponse findByUuid(@PathVariable String uuid) {
+        return licensePlateTypeService.findByUuid(uuid);
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteByUuid(@PathVariable String uuid){
         licensePlateTypeService.delete(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{uuid}")
     @ResponseStatus(HttpStatus.CREATED)
     LicensePlateTypeResponse updateByUuid(@PathVariable String uuid, @RequestBody LicensePlateTypeRequest licensePlateTypeRequest){
         return licensePlateTypeService.updateByUuid(uuid, licensePlateTypeRequest);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     LicensePlateTypeResponse create(@RequestBody LicensePlateTypeRequest licensePlateTypeRequest){

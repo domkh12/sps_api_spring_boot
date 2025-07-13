@@ -11,6 +11,10 @@ import java.util.Optional;
 
 @Repository
 public interface CompanyTypeRepository extends JpaRepository<CompanyType, Integer> {
+
+    @Query("select (count(c) > 0) from CompanyType c where upper(c.name) = upper(?1) and c.uuid <> ?2")
+    boolean existsByNameIgnoreCaseAndUuidNot(String name, String uuid);
+
     @Transactional
     @Modifying
     @Query(value = "UPDATE companies SET company_type_id = null WHERE company_type_id IN (SELECT id FROM company_types c WHERE c.uuid = ?1); delete from company_types c where c.uuid = ?1", nativeQuery = true)

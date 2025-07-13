@@ -21,6 +21,13 @@ public class CityController {
     private final CityService cityService;
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/{uuid}")
+    @ResponseStatus(HttpStatus.OK)
+    CityResponse findByUuid(@PathVariable String uuid){
+        return cityService.findByUuid(uuid);
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteByUuid(@PathVariable String uuid){

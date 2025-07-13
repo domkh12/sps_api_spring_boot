@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 public interface GenderService {
+    GenderResponse findByUuid(String uuid);
+
     void delete(String uuid);
 
     GenderResponse updateByUuid(String uuid, GenderRequest genderRequest);

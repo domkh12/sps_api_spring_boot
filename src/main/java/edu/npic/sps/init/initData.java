@@ -148,8 +148,10 @@ public class initData {
         Gender male = new Gender();
         male.setUuid(UUID.randomUUID().toString());
         male.setGender("Male");
+        male.setCreatedAt(LocalDateTime.now());
         Gender female = new Gender();
         female.setUuid(UUID.randomUUID().toString());
+        female.setCreatedAt(LocalDateTime.now());
         female.setGender("Female");
         genderRepository.saveAll(List.of(male, female));
     }
@@ -205,7 +207,7 @@ public class initData {
 
         List<Role> roles = new ArrayList<>();
         // Ensure roles exist
-        roles.add(roleRepository.findById(1).orElseThrow(() -> new RuntimeException("Role 1 not found")));
+        roles.add(roleRepository.findById(2).orElseThrow(() -> new RuntimeException("Role 1 not found")));
         user.setSites(sites);
         user.setRoles(roles);
 

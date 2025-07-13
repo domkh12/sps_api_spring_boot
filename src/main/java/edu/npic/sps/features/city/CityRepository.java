@@ -12,10 +12,12 @@ import java.util.Optional;
 @Repository
 public interface CityRepository extends JpaRepository<City, Integer> {
 
+    @Query("select (count(c) > 0) from City c where upper(c.name) = upper(?1) and c.uuid <> ?2")
+    boolean existsByNameIgnoreCaseAndUuidNot(String name, String uuid);
+
     @Transactional
     @Modifying
-    @Query(value = "UPDATE branches SET city_id = NULL WHERE c" +
-            "ity_id IN (SELECT id FROM cities WHERE uuid = ?1); DELETE FROM cities WHERE uuid = ?1", nativeQuery = true)
+    @Query(value = "UPDATE branches SET city_id = NULL WHERE city_id IN (SELECT id FROM cities WHERE uuid = ?1); UPDATE companies SET city_id = NULL WHERE city_id IN (SELECT id FROM cities WHERE uuid = ?1); DELETE FROM cities WHERE uuid = ?1", nativeQuery = true)
     void deleteBySitesNullAndUuid(String uuid);
 
     Optional<City> findByUuid(String uuid);

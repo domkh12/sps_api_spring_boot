@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,14 @@ public class CityServiceImpl implements CityService{
     private final CityMapper cityMapper;
 
     @Override
+    public CityResponse findByUuid(String uuid) {
+        City city = cityRepository.findByUuid(uuid).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "City not found!")
+        );
+        return cityMapper.toCityResponse(city);
+    }
+
+    @Override
     public void delete(String uuid) {
         City city = cityRepository.findByUuid(uuid).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "City not found!")
@@ -35,9 +44,15 @@ public class CityServiceImpl implements CityService{
 
     @Override
     public CityResponse updateByUuid(String uuid, CityRequest cityRequest) {
+
+        if (cityRepository.existsByNameIgnoreCaseAndUuidNot(cityRequest.name().trim(), uuid)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "City name already exists!");
+        }
+
         City city = cityRepository.findByUuid(uuid).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "City not found!")
         );
+
         cityMapper.updateFromCityRequest(cityRequest, city);
         return cityMapper.toCityResponse(cityRepository.save(city));
     }
@@ -53,7 +68,8 @@ public class CityServiceImpl implements CityService{
 
     @Override
     public List<CityResponse> findAll() {
-        List<City> cities = cityRepository.findAll();
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        List<City> cities = cityRepository.findAll(sort);
         return cities.stream().map(cityMapper::toCityResponse).toList();
     }
 }

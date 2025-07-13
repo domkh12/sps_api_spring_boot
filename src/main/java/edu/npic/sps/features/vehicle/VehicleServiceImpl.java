@@ -100,7 +100,8 @@ public class VehicleServiceImpl implements VehicleService{
         Optional<Vehicle> vehicle = vehicleRepository.findByNumberPlate(numberPlate);
 
         Optional<LicensePlateProvince> licensePlateProvince = licensePlateProvinceRepository.findByProvinceNameEnIgnoreCase(provincePlate);
-        ParkingSpace parkingSpace = parkingSpaceRepository.findByLabelIgnoreCase(space).orElseThrow(
+
+        ParkingSpace parkingSpace = parkingSpaceRepository.findByLabelIgnoreCase(space.trim()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking space not found!")
         );
 

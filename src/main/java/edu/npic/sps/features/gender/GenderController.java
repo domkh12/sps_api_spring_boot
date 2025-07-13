@@ -19,6 +19,14 @@ public class GenderController {
 
     private final GenderService genderService;
 
+    
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/{uuid}")
+    @ResponseStatus(HttpStatus.OK)
+    GenderResponse findByUuid(@PathVariable String uuid){
+        return genderService.findByUuid(uuid);
+    }
+
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{uuid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

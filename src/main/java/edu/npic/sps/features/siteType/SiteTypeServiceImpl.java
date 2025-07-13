@@ -5,10 +5,12 @@ import edu.npic.sps.features.siteType.dto.SiteTypeRequest;
 import edu.npic.sps.features.siteType.dto.SiteTypeResponse;
 import edu.npic.sps.mapper.SiteTypeMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,11 +35,16 @@ public class SiteTypeServiceImpl implements SiteTypeService{
         SiteType siteType = siteTypeRepository.findByUuid(uuid).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Site Type not found!")
         );
-        siteTypeRepository.delete(siteType);
+        siteTypeRepository.deleteByUuid(siteType.getUuid());
     }
 
     @Override
     public SiteTypeResponse updateByUuid(String uuid, SiteTypeRequest siteTypeRequest) {
+
+        if (siteTypeRepository.existsByNameIgnoreCaseAndUuidNot(siteTypeRequest.name(), uuid)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Site Type already exists!");
+        }
+
         SiteType siteType = siteTypeRepository.findByUuid(uuid).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Site Type not found!")
         );
@@ -49,13 +56,15 @@ public class SiteTypeServiceImpl implements SiteTypeService{
     public SiteTypeResponse create(SiteTypeRequest siteTypeRequest) {
         SiteType siteType = siteTypeMapper.fromSiteTypeRequest(siteTypeRequest);
         siteType.setUuid(UUID.randomUUID().toString());
+        siteType.setCreatedAt(LocalDateTime.now());
         SiteType savedSiteType = siteTypeRepository.save(siteType);
         return siteTypeMapper.toSiteTypeResponse(savedSiteType);
     }
 
     @Override
     public List<SiteTypeResponse> findAll() {
-        List<SiteType> siteTypes = siteTypeRepository.findAll();
-        return siteTypes.stream().map(siteType -> siteTypeMapper.toSiteTypeResponse(siteType)).toList();
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        List<SiteType> siteTypes = siteTypeRepository.findAll(sort);
+        return siteTypes.stream().map(siteTypeMapper::toSiteTypeResponse).toList();
     }
 }

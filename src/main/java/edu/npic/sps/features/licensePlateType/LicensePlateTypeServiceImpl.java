@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +22,14 @@ public class LicensePlateTypeServiceImpl implements LicensePlateTypeService{
     private final LicensePlateTypeMapper licensePlateTypeMapper;
 
     @Override
+    public LicensePlateTypeResponse findByUuid(String uuid) {
+        LicensePlateType licensePlateType = licensePlateTypeRepository.findByUuid(uuid).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "License plate type not found!")
+        );
+        return licensePlateTypeMapper.toLicensePlateTypeResponse(licensePlateType);
+    }
+
+    @Override
     public void delete(String uuid) {
         LicensePlateType licensePlateType = licensePlateTypeRepository.findByUuid(uuid).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "License plate type not found!")
@@ -30,6 +39,11 @@ public class LicensePlateTypeServiceImpl implements LicensePlateTypeService{
 
     @Override
     public LicensePlateTypeResponse updateByUuid(String uuid, LicensePlateTypeRequest licensePlateTypeRequest) {
+
+        if (licensePlateTypeRepository.existsByNameIgnoreCaseAndUuidNot(licensePlateTypeRequest.name(), uuid)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "License plate type already exists!");
+        }
+
         LicensePlateType licensePlateType = licensePlateTypeRepository.findByUuid(uuid).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "License plate type not found!")
         );
@@ -45,6 +59,7 @@ public class LicensePlateTypeServiceImpl implements LicensePlateTypeService{
         }
         LicensePlateType licensePlateType = licensePlateTypeMapper.fromLicensePlateTypeRequest(licensePlateTypeRequest);
         licensePlateType.setUuid(UUID.randomUUID().toString());
+        licensePlateType.setCreatedAt(LocalDateTime.now());
         LicensePlateType licensePlateTypeSaved = licensePlateTypeRepository.save(licensePlateType);
         return licensePlateTypeMapper.toLicensePlateTypeResponse(licensePlateTypeSaved);
     }
