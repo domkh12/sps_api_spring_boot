@@ -21,6 +21,7 @@ public class LicensePlateType {
     private String uuid;
     @Column(nullable = false, unique = true)
     private String name;
+    private String alias;
     @Column(nullable = false)
     private LocalDateTime createdAt;
 

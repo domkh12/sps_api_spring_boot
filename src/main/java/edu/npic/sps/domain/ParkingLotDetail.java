@@ -23,9 +23,14 @@ public class ParkingLotDetail {
     private LocalDateTime timeIn;
     @Column(length = 100)
     private LocalDateTime timeOut;
+    private Boolean isCheckIn;
+    private Boolean isCheckOut;
     @Column(nullable = false, length = 100)
     private Boolean isParking;
     private Long durationHours;
+    private String image;
+    private String imageCheckIn;
+    private String imageCheckOut;
 
     // relationship
     @ManyToOne

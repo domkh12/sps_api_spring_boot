@@ -8,8 +8,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -18,6 +20,17 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
+
+    @Transactional
+    @Modifying
+    @Query(value =
+            """
+            UPDATE vehicles SET user_id = NULL WHERE user_id IN (SELECT id FROM users WHERE uuid = ?1);
+            DELETE FROM users_roles WHERE user_id IN (SELECT id FROM users WHERE uuid = ?1);
+            DELETE FROM users WHERE uuid = ?1
+            """,
+            nativeQuery = true)
+    void deleteByUuid(String uuid);
 
     String countByCreatedAt(LocalDateTime createdAt);
 

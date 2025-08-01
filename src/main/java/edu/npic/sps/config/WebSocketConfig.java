@@ -1,6 +1,7 @@
 package edu.npic.sps.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,9 +60,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         DefaultContentTypeResolver resolver = new DefaultContentTypeResolver();
         resolver.setDefaultMimeType(APPLICATION_JSON);
         MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
-        //register jackson-datatype-jsr310
-        converter.setObjectMapper(new ObjectMapper()
-                .registerModule(new JavaTimeModule()));
+
+        // Configure ObjectMapper to serialize LocalDateTime as string instead of array
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        converter.setObjectMapper(objectMapper);
         converter.setContentTypeResolver(resolver);
         messageConverters.add(converter);
         log.info("Message converters configured");

@@ -3,6 +3,7 @@ package edu.npic.sps.features.user.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import edu.npic.sps.features.gender.dto.GenderResponse;
 import edu.npic.sps.features.role.dto.RoleResponse;
+import edu.npic.sps.features.signUpMethod.dto.SignUpMethodResponse;
 import edu.npic.sps.features.site.dto.SiteResponse;
 import lombok.Builder;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -29,6 +30,7 @@ public record UserDetailResponse(
         String status,
         List<SiteResponse> sites,
         GenderResponse gender,
+        SignUpMethodResponse signUpMethod,
         Boolean isVerified,
         Boolean isDeleted
 ) {

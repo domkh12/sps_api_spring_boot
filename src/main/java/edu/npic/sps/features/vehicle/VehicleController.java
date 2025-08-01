@@ -1,16 +1,26 @@
 package edu.npic.sps.features.vehicle;
 
 import edu.npic.sps.features.parkingLotDetail.dto.ParkingDetailResponse;
+import edu.npic.sps.features.vehicle.dto.CameraRequest;
 import edu.npic.sps.features.vehicle.dto.CreateVehicle;
 import edu.npic.sps.features.vehicle.dto.VehicleRequest;
 import edu.npic.sps.features.vehicle.dto.VehicleResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.fonts.SimpleFontExtensionsRegistryFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,6 +30,58 @@ public class VehicleController {
 
     private final VehicleService vehicleService;
 
+//    @GetMapping("/export/pdf")
+//    public ResponseEntity<byte[]> downloadPdf() throws Exception {
+//        // Set up font registry for JasperReports
+//        System.setProperty(
+//                "net.sf.jasperreports.extension.registry.factory.fonts",
+//                SimpleFontExtensionsRegistryFactory.class.getName()
+//        );
+//
+//        // Load JRXML and compile
+//        String reportPath = "jasper/vehicle_report.jrxml";
+//        InputStream jrxmlStream = getClass().getClassLoader().getResourceAsStream(reportPath);
+//        if (jrxmlStream == null) {
+//            throw new RuntimeException("Report template not found: " + reportPath);
+//        }
+//
+//        try {
+//            // Compile report
+//            JasperReport jasperReport = JasperCompileManager.compileReport(jrxmlStream);
+//
+//            // Parameters
+//            Map<String, Object> params = new HashMap<>();
+//            params.put("title", "របាយការណ៍យានយន្ត");
+//
+//            // Generate report
+//            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params, new JREmptyDataSource());
+//
+//            // Export to PDF
+//            byte[] pdfBytes = JasperExportManager.exportReportToPdf(jasperPrint);
+//
+//            return ResponseEntity.ok()
+//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=vehicle_report.pdf")
+//                    .contentType(MediaType.APPLICATION_PDF)
+//                    .body(pdfBytes);
+//        } catch (JRException e) {
+//            throw new RuntimeException("Error generating report: " + e.getMessage(), e);
+//        } finally {
+//            jrxmlStream.close();
+//        }
+//    }
+
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @GetMapping("/report")
+    @ResponseStatus(HttpStatus.OK)
+    Page<VehicleResponse> getVehicleReport(@RequestParam(required = false, defaultValue = "1") int pageNo,
+                                           @RequestParam(required = false, defaultValue = "20") int pageSize,
+                                           @RequestParam LocalDateTime dateFrom,
+                                           @RequestParam LocalDateTime dateTo
+                                           ){
+        return vehicleService.getVehicleReport(pageNo, pageSize, dateFrom, dateTo);
+    }
+
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @GetMapping("/uuid/{uuid}")
     @ResponseStatus(HttpStatus.OK)
@@ -27,31 +89,60 @@ public class VehicleController {
         return vehicleService.getVehicleByUuid(uuid);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping("/check-out")
     @ResponseStatus(HttpStatus.CREATED)
-    ParkingDetailResponse checkOut(
-            @RequestParam String numberPlate,
-            @RequestParam(required = false) String vehicleModel,
-            @RequestParam(required = false) String vehicleMake,
-            @RequestParam(required = false) String color
-    ){
-        return vehicleService.checkOut(numberPlate, vehicleModel, vehicleMake, color);
+    ParkingDetailResponse checkOut(@Valid @RequestBody CameraRequest cameraRequest){
+        return vehicleService.checkOut(cameraRequest);
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @GetMapping("/check-out/filters")
+    @ResponseStatus(HttpStatus.OK)
+    Page<ParkingDetailResponse> filterCheckOut(@RequestParam(required = false, defaultValue = "1") int pageNo,
+                                              @RequestParam(required = false, defaultValue = "20") int pageSize,
+                                              @RequestParam(required = false, defaultValue = "") String keywords,
+                                              @RequestParam(required = false, defaultValue = "") LocalDateTime dateFrom,
+                                              @RequestParam(required = false, defaultValue = "") LocalDateTime dateTo
+    ){
+        return vehicleService.filterCheckOut(pageNo, pageSize, keywords, dateFrom, dateTo);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @GetMapping("/check-out")
+    @ResponseStatus(HttpStatus.OK)
+    Page<ParkingDetailResponse> getAllCheckOut(
+            @RequestParam(required = false, defaultValue = "1") int pageNo,
+            @RequestParam(required = false, defaultValue = "20") int pageSize
+    ){
+        return vehicleService.getAllCheckOut(pageNo, pageSize);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @GetMapping("/check-in/filters")
+    @ResponseStatus(HttpStatus.OK)
+    Page<ParkingDetailResponse> filterCheckIn(@RequestParam(required = false, defaultValue = "1") int pageNo,
+                                              @RequestParam(required = false, defaultValue = "20") int pageSize,
+                                              @RequestParam(required = false, defaultValue = "") String keywords,
+                                              @RequestParam(required = false, defaultValue = "") LocalDateTime dateFrom,
+                                              @RequestParam(required = false, defaultValue = "") LocalDateTime dateTo
+    ){
+        return vehicleService.filterCheckIn(pageNo, pageSize, keywords, dateFrom, dateTo);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @GetMapping("/check-in")
+    @ResponseStatus(HttpStatus.OK)
+    Page<ParkingDetailResponse> getAllCheckIn(
+            @RequestParam(required = false, defaultValue = "1") int pageNo,
+            @RequestParam(required = false, defaultValue = "20") int pageSize
+    ){
+        return vehicleService.getAllCheckIn(pageNo, pageSize);
+    }
+
     @PostMapping("/check-in")
     @ResponseStatus(HttpStatus.CREATED)
-    ParkingDetailResponse checkIn(
-            @RequestParam String numberPlate,
-            @RequestParam String provincePlate,
-            @RequestParam(required = false) String vehicleModel,
-            @RequestParam(required = false) String vehicleMake,
-            @RequestParam(required = false) String color,
-            @RequestParam String space,
-            @RequestParam String lot
-    ) {
-        return vehicleService.checkIn(numberPlate, provincePlate, vehicleModel, vehicleMake, color, space, lot);
+    ParkingDetailResponse checkIn(@Valid @RequestBody CameraRequest cameraRequest) {
+        return vehicleService.checkIn(cameraRequest);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")

@@ -23,6 +23,8 @@ public class LicensePlateProvince {
     private String provinceNameKh;
     @Column(unique = true, nullable = false)
     private String provinceNameEn;
+    @Column(unique = true, nullable = false)
+    private String alias;
     @Column(nullable = false)
     private LocalDateTime createdAt;
 

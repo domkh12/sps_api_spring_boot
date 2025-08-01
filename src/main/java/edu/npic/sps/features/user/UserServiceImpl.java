@@ -220,12 +220,7 @@ public class UserServiceImpl implements UserService{
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
             );
 
-            if (emailVerificationRepository.existsByUser(user)){
-                EmailVerification emailVerification = emailVerificationRepository.findByUser(user).orElseThrow();
-                emailVerification.setUser(null);
-            }
-
-            userRepository.delete(user);
+            userRepository.deleteByUuid(user.getUuid());
         }
 
     }

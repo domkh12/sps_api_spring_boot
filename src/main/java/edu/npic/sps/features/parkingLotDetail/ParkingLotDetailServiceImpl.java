@@ -30,6 +30,36 @@ public class ParkingLotDetailServiceImpl implements ParkingLotDetailService {
     private final ParkingLotDetailRepository parkingLotDetailRepository;
     private final ParkingLotDetailMapper parkingLotDetailMapper;
 
+    @Override
+    public Page<ParkingDetailResponse> filter(int pageNo, int pageSize, String keywords, LocalDateTime dateFrom, LocalDateTime dateTo) {
+
+        if (pageNo < 1 || pageSize < 1){
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Page number or page size must greater than 0!"
+            );
+        }
+
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
+        Page<ParkingLotDetail> parkingLotDetails = Page.empty();
+
+        if (dateFrom != null && dateTo != null){
+            parkingLotDetails = parkingLotDetailRepository.filterParkingLotDetailWithDateRange(
+                    keywords,
+                    dateFrom,
+                    dateTo,
+                    pageRequest
+            );
+        }else{
+            parkingLotDetails = parkingLotDetailRepository.filterParkingLotDetailWithKeywords(
+                    keywords,
+                    pageRequest
+            );
+        }
+
+        return parkingLotDetails.map(parkingLotDetailMapper::toParkingDetailResponse);
+    }
 
     @Override
     public Page<ParkingDetailResponse> findAll(int pageNo, int pageSize) {

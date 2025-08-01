@@ -12,6 +12,9 @@ import java.util.Optional;
 @Repository
 public interface LicensePlateProvinceRepository extends JpaRepository<LicensePlateProvince, Integer> {
 
+    @Query("select l from LicensePlateProvince l where upper(l.alias) = upper(?1)")
+    Optional<LicensePlateProvince> findByAliasIgnoreCase(String alias);
+
     @Transactional
     @Modifying
     @Query(value = "UPDATE vehicles SET license_plate_province_id = NULL WHERE license_plate_province_id IN (SELECT id FROM license_plate_provinces WHERE uuid = ?1); DELETE FROM license_plate_provinces WHERE uuid = ?1", nativeQuery = true)

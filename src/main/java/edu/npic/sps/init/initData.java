@@ -51,7 +51,7 @@ public class initData {
     private final LicensePlateProvinceRepository licensePlateProvinceRepository;
     private final CompanyTypeRepository companyTypeRepository;
 
-//    @PostConstruct
+    @PostConstruct
     public void init() {
         try {
             initCompanyTypeData();
@@ -103,17 +103,236 @@ public class initData {
         LicensePlateType licensePlateType = new LicensePlateType();
         licensePlateType.setUuid(UUID.randomUUID().toString());
         licensePlateType.setName("Royal Cambodian Armed Forces");
+        licensePlateType.setAlias("royalcambodianarmedforces");
         licensePlateType.setCreatedAt(LocalDateTime.now());
         licensePlateTypeRepository.save(licensePlateType);
     }
 
     private void initLicensePlateProvinces(){
-        LicensePlateProvince licensePlateProvince = new LicensePlateProvince();
-        licensePlateProvince.setUuid(UUID.randomUUID().toString());
-        licensePlateProvince.setProvinceNameEn("Phnom Penh");
-        licensePlateProvince.setProvinceNameKh("ភ្នំពេញ");
-        licensePlateProvince.setCreatedAt(LocalDateTime.now());
-        licensePlateProvinceRepository.save(licensePlateProvince);
+        // Phnom Penh (Capital)
+        LicensePlateProvince licensePlateProvince1 = new LicensePlateProvince();
+        licensePlateProvince1.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince1.setProvinceNameEn("Phnom Penh");
+        licensePlateProvince1.setProvinceNameKh("ភ្នំពេញ");
+        licensePlateProvince1.setAlias("phnompenh");
+        licensePlateProvince1.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince1);
+
+        // Banteay Meanchey
+        LicensePlateProvince licensePlateProvince2 = new LicensePlateProvince();
+        licensePlateProvince2.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince2.setProvinceNameEn("Banteay Meanchey");
+        licensePlateProvince2.setProvinceNameKh("បន្ទាយមានជ័យ");
+        licensePlateProvince2.setAlias("banteaymeanchey");
+        licensePlateProvince2.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince2);
+
+        // Battambang
+        LicensePlateProvince licensePlateProvince3 = new LicensePlateProvince();
+        licensePlateProvince3.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince3.setProvinceNameEn("Battambang");
+        licensePlateProvince3.setProvinceNameKh("បាត់ដំបង");
+        licensePlateProvince3.setAlias("battambang");
+        licensePlateProvince3.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince3);
+
+        // Kampong Cham
+        LicensePlateProvince licensePlateProvince4 = new LicensePlateProvince();
+        licensePlateProvince4.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince4.setProvinceNameEn("Kampong Cham");
+        licensePlateProvince4.setProvinceNameKh("កំពង់ចាម");
+        licensePlateProvince4.setAlias("kampongcham");
+        licensePlateProvince4.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince4);
+
+        // Kampong Chhnang
+        LicensePlateProvince licensePlateProvince5 = new LicensePlateProvince();
+        licensePlateProvince5.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince5.setProvinceNameEn("Kampong Chhnang");
+        licensePlateProvince5.setProvinceNameKh("កំពង់ឆ្នាំង");
+        licensePlateProvince5.setAlias("kampongchhnang");
+        licensePlateProvince5.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince5);
+
+        // Kampong Speu
+        LicensePlateProvince licensePlateProvince6 = new LicensePlateProvince();
+        licensePlateProvince6.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince6.setProvinceNameEn("Kampong Speu");
+        licensePlateProvince6.setProvinceNameKh("កំពង់ស្ពឺ");
+        licensePlateProvince6.setAlias("kampongspeu");
+        licensePlateProvince6.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince6);
+
+        // Kampong Thom
+        LicensePlateProvince licensePlateProvince7 = new LicensePlateProvince();
+        licensePlateProvince7.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince7.setProvinceNameEn("Kampong Thom");
+        licensePlateProvince7.setProvinceNameKh("កំពង់ធំ");
+        licensePlateProvince7.setAlias("kampongthom");
+        licensePlateProvince7.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince7);
+
+        // Kampot
+        LicensePlateProvince licensePlateProvince8 = new LicensePlateProvince();
+        licensePlateProvince8.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince8.setProvinceNameEn("Kampot");
+        licensePlateProvince8.setProvinceNameKh("កំពត");
+        licensePlateProvince8.setAlias("kampot");
+        licensePlateProvince8.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince8);
+
+        // Kandal
+        LicensePlateProvince licensePlateProvince9 = new LicensePlateProvince();
+        licensePlateProvince9.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince9.setProvinceNameEn("Kandal");
+        licensePlateProvince9.setProvinceNameKh("កណ្ដាល");
+        licensePlateProvince9.setAlias("kandal");
+        licensePlateProvince9.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince9);
+
+        // Koh Kong
+        LicensePlateProvince licensePlateProvince10 = new LicensePlateProvince();
+        licensePlateProvince10.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince10.setProvinceNameEn("Koh Kong");
+        licensePlateProvince10.setProvinceNameKh("កោះកុង");
+        licensePlateProvince10.setAlias("kohkong");
+        licensePlateProvince10.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince10);
+
+        // Kratie
+        LicensePlateProvince licensePlateProvince11 = new LicensePlateProvince();
+        licensePlateProvince11.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince11.setProvinceNameEn("Kratie");
+        licensePlateProvince11.setProvinceNameKh("ក្រចេះ");
+        licensePlateProvince11.setAlias("kratie");
+        licensePlateProvince11.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince11);
+
+        // Mondulkiri
+        LicensePlateProvince licensePlateProvince12 = new LicensePlateProvince();
+        licensePlateProvince12.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince12.setProvinceNameEn("Mondulkiri");
+        licensePlateProvince12.setProvinceNameKh("មណ្ឌលគិរី");
+        licensePlateProvince12.setAlias("mondulkiri");
+        licensePlateProvince12.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince12);
+
+        // Oddar Meanchey
+        LicensePlateProvince licensePlateProvince13 = new LicensePlateProvince();
+        licensePlateProvince13.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince13.setProvinceNameEn("Oddar Meanchey");
+        licensePlateProvince13.setProvinceNameKh("ឧត្ដរមានជ័យ");
+        licensePlateProvince13.setAlias("oddarmeanchey");
+        licensePlateProvince13.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince13);
+
+        // Pailin
+        LicensePlateProvince licensePlateProvince14 = new LicensePlateProvince();
+        licensePlateProvince14.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince14.setProvinceNameEn("Pailin");
+        licensePlateProvince14.setProvinceNameKh("ប៉ៃលិន");
+        licensePlateProvince14.setAlias("pailin");
+        licensePlateProvince14.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince14);
+
+        // Preah Vihear
+        LicensePlateProvince licensePlateProvince15 = new LicensePlateProvince();
+        licensePlateProvince15.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince15.setProvinceNameEn("Preah Vihear");
+        licensePlateProvince15.setProvinceNameKh("ព្រះវិហារ");
+        licensePlateProvince15.setAlias("preahvihear");
+        licensePlateProvince15.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince15);
+
+        // Prey Veng
+        LicensePlateProvince licensePlateProvince16 = new LicensePlateProvince();
+        licensePlateProvince16.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince16.setProvinceNameEn("Prey Veng");
+        licensePlateProvince16.setProvinceNameKh("ព្រៃវែង");
+        licensePlateProvince16.setAlias("preyveng");
+        licensePlateProvince16.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince16);
+
+        // Pursat
+        LicensePlateProvince licensePlateProvince17 = new LicensePlateProvince();
+        licensePlateProvince17.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince17.setProvinceNameEn("Pursat");
+        licensePlateProvince17.setProvinceNameKh("ពោធិ៍សាត់");
+        licensePlateProvince17.setAlias("pursat");
+        licensePlateProvince17.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince17);
+
+        // Ratanakiri
+        LicensePlateProvince licensePlateProvince18 = new LicensePlateProvince();
+        licensePlateProvince18.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince18.setProvinceNameEn("Ratanakiri");
+        licensePlateProvince18.setProvinceNameKh("រតនគិរី");
+        licensePlateProvince18.setAlias("ratanakiri");
+        licensePlateProvince18.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince18);
+
+        // Siem Reap
+        LicensePlateProvince licensePlateProvince19 = new LicensePlateProvince();
+        licensePlateProvince19.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince19.setProvinceNameEn("Siem Reap");
+        licensePlateProvince19.setProvinceNameKh("សៀមរាប");
+        licensePlateProvince19.setAlias("siemreap");
+        licensePlateProvince19.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince19);
+
+        // Preah Sihanouk (Sihanoukville)
+        LicensePlateProvince licensePlateProvince20 = new LicensePlateProvince();
+        licensePlateProvince20.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince20.setProvinceNameEn("Preah Sihanouk");
+        licensePlateProvince20.setProvinceNameKh("ព្រះសីហនុ");
+        licensePlateProvince20.setAlias("preahsihanouk");
+        licensePlateProvince20.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince20);
+
+        // Stung Treng
+        LicensePlateProvince licensePlateProvince21 = new LicensePlateProvince();
+        licensePlateProvince21.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince21.setProvinceNameEn("Stung Treng");
+        licensePlateProvince21.setProvinceNameKh("ស្ទឹងត្រែង");
+        licensePlateProvince21.setAlias("stungtreng");
+        licensePlateProvince21.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince21);
+
+        // Svay Rieng
+        LicensePlateProvince licensePlateProvince22 = new LicensePlateProvince();
+        licensePlateProvince22.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince22.setProvinceNameEn("Svay Rieng");
+        licensePlateProvince22.setProvinceNameKh("ស្វាយរៀង");
+        licensePlateProvince22.setAlias("svayrieng");
+        licensePlateProvince22.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince22);
+
+        // Takeo
+        LicensePlateProvince licensePlateProvince23 = new LicensePlateProvince();
+        licensePlateProvince23.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince23.setProvinceNameEn("Takeo");
+        licensePlateProvince23.setProvinceNameKh("តាកែវ");
+        licensePlateProvince23.setAlias("takeo");
+        licensePlateProvince23.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince23);
+
+        // Tbong Khmum
+        LicensePlateProvince licensePlateProvince24 = new LicensePlateProvince();
+        licensePlateProvince24.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince24.setProvinceNameEn("Tbong Khmum");
+        licensePlateProvince24.setProvinceNameKh("ត្បូងឃ្មុំ");
+        licensePlateProvince24.setAlias("tbongkhmum");
+        licensePlateProvince24.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince24);
+
+        // Kep
+        LicensePlateProvince licensePlateProvince25 = new LicensePlateProvince();
+        licensePlateProvince25.setUuid(UUID.randomUUID().toString());
+        licensePlateProvince25.setProvinceNameEn("Kep");
+        licensePlateProvince25.setProvinceNameKh("កែប");
+        licensePlateProvince25.setAlias("kep");
+        licensePlateProvince25.setCreatedAt(LocalDateTime.now());
+        licensePlateProvinceRepository.save(licensePlateProvince25);
     }
 
     private void initSitesData(){

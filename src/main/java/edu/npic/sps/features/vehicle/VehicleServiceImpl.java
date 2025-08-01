@@ -1,40 +1,42 @@
 package edu.npic.sps.features.vehicle;
 
+import edu.npic.sps.base.Status;
 import edu.npic.sps.domain.*;
+import edu.npic.sps.features.gender.GenderRepository;
 import edu.npic.sps.features.licensePlateProvince.LicensePlateProvinceRepository;
 import edu.npic.sps.features.licensePlateType.LicensePlateTypeRepository;
 import edu.npic.sps.features.parkingLot.ParkingLotRepository;
 import edu.npic.sps.features.parkingLotDetail.ParkingLotDetailRepository;
 import edu.npic.sps.features.parkingLotDetail.dto.ParkingDetailResponse;
 import edu.npic.sps.features.parkingSpace.ParkingSpaceRepository;
+import edu.npic.sps.features.role.RoleRepository;
+import edu.npic.sps.features.signUpMethod.SignUpMethodRepository;
 import edu.npic.sps.features.site.SiteRepository;
+import edu.npic.sps.features.telegramBot.TelegramNotificationService;
 import edu.npic.sps.features.user.UserRepository;
-import edu.npic.sps.features.user.dto.UserDetailResponse;
+import edu.npic.sps.features.vehicle.dto.CameraRequest;
 import edu.npic.sps.features.vehicle.dto.CreateVehicle;
 import edu.npic.sps.features.vehicle.dto.VehicleRequest;
 import edu.npic.sps.features.vehicle.dto.VehicleResponse;
 import edu.npic.sps.features.vehicletype.VehicleTypeRepository;
 import edu.npic.sps.mapper.ParkingLotDetailMapper;
-import edu.npic.sps.mapper.UserMapper;
 import edu.npic.sps.mapper.VehicleMapper;
-import edu.npic.sps.mapper.VehicleTypeMapper;
 import edu.npic.sps.util.AuthUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -54,26 +56,23 @@ public class VehicleServiceImpl implements VehicleService{
     private final ParkingLotDetailMapper parkingLotDetailMapper;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final ParkingLotRepository parkingLotRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final GenderRepository genderRepository;
+    private final SignUpMethodRepository signUpMethodRepository;
+    private final RoleRepository roleRepository;
+    private final TelegramNotificationService telegramNotificationService;
+
 
     @Override
-    public ParkingDetailResponse checkOut(String numberPlate, String vehicleModel, String vehicleMake, String color) {
+    public ParkingDetailResponse checkOut(CameraRequest cameraRequest) {
 
-        Vehicle vehicle = vehicleRepository.findByNumberPlate(numberPlate).orElseThrow(
+        Vehicle vehicle = vehicleRepository.findByNumberPlate(cameraRequest.numberPlate()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found!")
         );
 
         ParkingLotDetail parkingLotDetail = parkingLotDetailRepository.findByVehicle(true, vehicle.getUuid()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No active parking session found for this vehicle!"
         ));
-
-        ParkingSpace parkingSpace = parkingLotDetail.getParkingSpace();
-        ParkingLot parkingLot = parkingLotDetail.getParkingLot();
-
-        parkingSpace.setEmpty(parkingSpace.getEmpty() + 1);
-        parkingSpace.setFilled(parkingSpace.getFilled() - 1);
-        parkingLot.setIsAvailable(true);
-        parkingSpaceRepository.save(parkingSpace);
-        parkingLotRepository.save(parkingLot);
 
         LocalDateTime timeIn = parkingLotDetail.getTimeIn();
         LocalDateTime timeOut = LocalDateTime.now();
@@ -82,95 +81,329 @@ public class VehicleServiceImpl implements VehicleService{
         parkingLotDetail.setIsParking(false);
         parkingLotDetail.setTimeOut(timeOut);
         parkingLotDetail.setDurationHours(durationHours);
+        parkingLotDetail.setIsCheckOut(true);
+        parkingLotDetail.setCreatedAt(LocalDateTime.now());
+        parkingLotDetail.setImageCheckOut(cameraRequest.imageCheckOut());
+
+        ParkingLotDetail savedParkingLotDetail = parkingLotDetailRepository.save(parkingLotDetail);
 
         simpMessagingTemplate.convertAndSend(
-                "/topic/slot-update",
-                parkingLotDetailMapper.toParkingDetailResponse(parkingLotDetail)
+                "/topic/check-out",
+                parkingLotDetailMapper.toParkingDetailResponse(savedParkingLotDetail)
         );
-        parkingLotDetailRepository.save(parkingLotDetail);
+
+        // 🔥 NEW: Send Telegram notification for check-out
+        String provinceName = vehicle.getLicensePlateProvince() != null ?
+                vehicle.getLicensePlateProvince().getProvinceNameEn() : null;
+
+        telegramNotificationService.sendCheckOutNotification(
+                vehicle.getNumberPlate(),
+                provinceName,
+                timeIn,
+                timeOut,
+                durationHours,
+                savedParkingLotDetail.getImageCheckOut()
+        );
 
         return parkingLotDetailMapper.toParkingDetailResponse(parkingLotDetail);
     }
 
     @Override
-    public ParkingDetailResponse checkIn(String numberPlate, String provincePlate, String vehicleModel, String vehicleMake, String color, String space, String lot) {
+    public Page<ParkingDetailResponse> filterCheckOut(int pageNo, int pageSize, String keywords, LocalDateTime dateFrom, LocalDateTime dateTo) {
 
-        List<String> sites = authUtil.loggedUserSites();
+        if (pageNo < 1 || pageSize < 1) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Page size must be greater than 1"
+            );
+        }
 
-        Optional<Vehicle> vehicle = vehicleRepository.findByNumberPlate(numberPlate);
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
+        Page<ParkingLotDetail> parkingLotDetailPage = Page.empty();
 
-        Optional<LicensePlateProvince> licensePlateProvince = licensePlateProvinceRepository.findByProvinceNameEnIgnoreCase(provincePlate);
-
-        ParkingSpace parkingSpace = parkingSpaceRepository.findByLabelIgnoreCase(space.trim()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking space not found!")
-        );
-
-        if (parkingSpace.getEmpty() > 0){
-            parkingSpace.setEmpty(parkingSpace.getEmpty() - 1);
-            parkingSpace.setFilled(parkingSpace.getFilled() + 1);
+        if (dateFrom != null && dateTo != null){
+            parkingLotDetailPage = parkingLotDetailRepository.filterCheckOutWithDateRange(
+                    keywords,
+                    dateFrom,
+                    dateTo,
+                    pageRequest
+            );
         }else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking space is filled!");
+            parkingLotDetailPage = parkingLotDetailRepository.filterCheckOutByKeywords(
+                    keywords,
+                    pageRequest
+            );
         }
 
-        ParkingLot parkingLot = parkingSpace.getParkingLots().stream().filter(
-                s -> s.getLotName().equalsIgnoreCase(lot)
-        ).findFirst().orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking slot not found in the location = "+ parkingSpace.getLabel())
-        );
+        return parkingLotDetailPage.map(parkingLotDetailMapper::toParkingDetailResponse);
 
-        if (parkingLot.getIsAvailable().equals(false)){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Slot is not available!");
+    }
+
+    @Override
+    public Page<ParkingDetailResponse> getAllCheckOut(int pageNo, int pageSize) {
+
+        if (pageNo < 1 || pageSize < 1) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Page size and page no must be greater than 1"
+            );
         }
 
-        parkingLot.setIsAvailable(false);
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
+        Page<ParkingLotDetail> parkingLotDetails = parkingLotDetailRepository.findByIsCheckOutTrue(pageRequest);
 
-        if (!licensePlateProvince.isPresent()){
-            LicensePlateProvince newLicensePlateProvince = new LicensePlateProvince();
-            newLicensePlateProvince.setUuid(UUID.randomUUID().toString());
-            newLicensePlateProvince.setProvinceNameEn(provincePlate);
-            licensePlateProvinceRepository.save(newLicensePlateProvince);
+        return parkingLotDetails.map(parkingLotDetailMapper::toParkingDetailResponse);
+
+    }
+
+    @Override
+    public Page<ParkingDetailResponse> filterCheckIn(int pageNo, int pageSize, String keywords, LocalDateTime dateFrom, LocalDateTime dateTo) {
+
+        if (pageNo < 1 || pageSize < 1) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Page size must be greater than 1"
+            );
         }
+
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
+        Page<ParkingLotDetail> parkingLotDetailPage = Page.empty();
+
+        if (dateFrom != null && dateTo != null){
+            parkingLotDetailPage = parkingLotDetailRepository.filterCheckInWithDateRange(
+                    keywords,
+                    dateFrom,
+                    dateTo,
+                    pageRequest
+            );
+        }else{
+            parkingLotDetailPage = parkingLotDetailRepository.filterCheckInByKeywords(
+                    keywords,
+                    pageRequest
+            );
+        }
+
+        return parkingLotDetailPage.map(parkingLotDetailMapper::toParkingDetailResponse);
+
+    }
+
+    @Override
+    public Page<ParkingDetailResponse> getAllCheckIn(int pageNo, int pageSize) {
+
+        if (pageNo < 1 || pageSize < 1) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Page size must be greater than 1"
+            );
+        }
+
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
+        Page<ParkingLotDetail> parkingLotDetails = parkingLotDetailRepository.findByIsCheckInTrue(pageRequest);
+
+        return parkingLotDetails.map(parkingLotDetailMapper::toParkingDetailResponse);
+
+    }
+
+    @Override
+    public Page<VehicleResponse> getVehicleReport(int pageNo, int pageSize, LocalDateTime dateFrom, LocalDateTime dateTo) {
+        if (pageNo < 1 || pageSize < 1){
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Page number and page size must be greater than 0!"
+            );
+        }
+
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
+        Page<Vehicle> vehicles = Page.empty();
+
+        vehicles = vehicleRepository.findByCreatedAtBetween(
+                dateFrom,
+                dateTo, pageRequest);
+
+        return vehicles.map(vehicleMapper::toVehicleResponse);
+
+    }
+
+    @Override
+    public ParkingDetailResponse checkIn(CameraRequest cameraRequest) {
+
+        Optional<Vehicle> vehicle = vehicleRepository.findByNumberPlate(cameraRequest.numberPlate());
+
+        Optional<LicensePlateProvince> licensePlateProvince = licensePlateProvinceRepository.findByAliasIgnoreCase(cameraRequest.provincePlate().toLowerCase());
+
         Vehicle newVehicle = null;
         if (vehicle.isEmpty()){
+
+            User user = new User();
+
+            user.setFullName("Guest");
+            user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString().substring(0, 10)));
+
+            // Assign specific email for the first user
+            user.setEmail(UUID.randomUUID().toString()+"@gmail.com");
+
+            user.setDateOfBirth(LocalDate.now().minusYears(20));
+            user.setGender(genderRepository.findById(1).get());
+            user.setPhoneNumber(UUID.randomUUID().toString().substring(0, 10));
+            user.setUuid(UUID.randomUUID().toString());
+            user.setCreatedAt(LocalDateTime.now());
+            user.setIsVerified(false);
+            user.setIsCredentialsNonExpired(true);
+            user.setIsAccountNonExpired(true);
+            user.setIsAccountNonLocked(true);
+            user.setIsDeleted(true);
+            user.setIsOnline(false);
+            user.setSignUpMethod(signUpMethodRepository.findByName("CUSTOM").get());
+            user.setIsTwoFactorEnabled(false);
+            user.setStatus(String.valueOf(Status.Pending));
+
+            List<Role> roles = new ArrayList<>();
+            // Ensure roles exist
+            roles.add(roleRepository.findByNameIgnoreCase("USER").orElseThrow(() -> new RuntimeException("Role User not found")));
+            user.setSites(new ArrayList<>());
+            user.setRoles(roles);
+
+            User savedUser = userRepository.save(user);
+
             newVehicle = new Vehicle();
-            Site site = siteRepository.findByUuid(sites.stream().findFirst().orElseThrow()).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found!")
-            );
-            if (!sites.contains(site.getUuid())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is not authorized for site");
-            }
+
             newVehicle.setUuid(UUID.randomUUID().toString());
-            newVehicle.setVehicleMake(vehicleMake);
-            newVehicle.setVehicleModel(vehicleModel);
-            newVehicle.setNumberPlate(numberPlate);
-            newVehicle.setLicensePlateProvince(licensePlateProvince.get());
-            newVehicle.setColor(color);
+            newVehicle.setVehicleMake("N/A");
+            newVehicle.setVehicleModel("N/A");
+            newVehicle.setNumberPlate(cameraRequest.numberPlate());
+            newVehicle.setLicensePlateProvince(licensePlateProvince.orElse(null));
+            newVehicle.setColor("N/A");
             newVehicle.setIsDeleted(false);
-            newVehicle.setSites(List.of(site));
+            newVehicle.setSites(new ArrayList<>());
             newVehicle.setCreatedAt(LocalDateTime.now());
+            newVehicle.setUser(savedUser);
             vehicleRepository.save(newVehicle);
         }else if(parkingLotDetailRepository.existsByVehicle_UuidAndIsParking(vehicle.get().getUuid(), true)){
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Vehicle is parking!");
         }
 
+        LocalDateTime checkInTime = LocalDateTime.now();
+
         ParkingLotDetail parkingLotDetail = new ParkingLotDetail();
         parkingLotDetail.setUuid(UUID.randomUUID().toString());
         parkingLotDetail.setIsParking(true);
-        parkingLotDetail.setTimeIn(LocalDateTime.now());
-        parkingLotDetail.setParkingSpace(parkingSpace);
-        parkingLotDetail.setParkingLot(parkingLot);
+        parkingLotDetail.setTimeIn(checkInTime);
         parkingLotDetail.setVehicle(vehicle.orElse(newVehicle));
-        parkingLotDetail.setCreatedAt(LocalDateTime.now());
-        parkingLotDetailRepository.save(parkingLotDetail);
+        parkingLotDetail.setIsCheckIn(true);
+        parkingLotDetail.setIsCheckOut(false);
+        parkingLotDetail.setImage(cameraRequest.image());
+        parkingLotDetail.setImageCheckIn(cameraRequest.image());
+        parkingLotDetail.setCreatedAt(checkInTime);
+        ParkingLotDetail savedParkingLotDetail = parkingLotDetailRepository.save(parkingLotDetail);
 
         simpMessagingTemplate.convertAndSend(
-                "/topic/slot-update",
-                parkingLotDetailMapper.toParkingDetailResponse(parkingLotDetail)
+                "/topic/check-in",
+                parkingLotDetailMapper.toParkingDetailResponse(savedParkingLotDetail)
+        );
+
+
+        // 🔥 NEW: Send Telegram notification for check-in
+        Vehicle finalVehicle = vehicle.orElse(newVehicle);
+        String provinceName = finalVehicle.getLicensePlateProvince() != null ?
+                finalVehicle.getLicensePlateProvince().getProvinceNameEn() :
+                cameraRequest.provincePlate();
+
+        telegramNotificationService.sendCheckInNotification(
+                finalVehicle.getNumberPlate(),
+                provinceName,
+                checkInTime,
+                savedParkingLotDetail.getImageCheckIn()
         );
 
         return parkingLotDetailMapper.toParkingDetailResponse(parkingLotDetail);
-
     }
+
+
+
+//    @Override
+//    public ParkingDetailResponse checkIn(String numberPlate, String provincePlate, String vehicleModel, String vehicleMake, String color, String space, String lot) {
+//
+//        List<String> sites = authUtil.loggedUserSites();
+//
+//        Optional<Vehicle> vehicle = vehicleRepository.findByNumberPlate(numberPlate);
+//
+//        Optional<LicensePlateProvince> licensePlateProvince = licensePlateProvinceRepository.findByProvinceNameEnIgnoreCase(provincePlate);
+//
+//        ParkingSpace parkingSpace = parkingSpaceRepository.findByLabelIgnoreCase(space.trim()).orElseThrow(
+//                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking space not found!")
+//        );
+//
+//        if (parkingSpace.getEmpty() > 0){
+//            parkingSpace.setEmpty(parkingSpace.getEmpty() - 1);
+//            parkingSpace.setFilled(parkingSpace.getFilled() + 1);
+//        }else {
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking space is filled!");
+//        }
+//
+//        ParkingLot parkingLot = parkingSpace.getParkingLots().stream().filter(
+//                s -> s.getLotName().equalsIgnoreCase(lot)
+//        ).findFirst().orElseThrow(
+//                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parking slot not found in the location = "+ parkingSpace.getLabel())
+//        );
+//
+//        if (parkingLot.getIsAvailable().equals(false)){
+//            throw new ResponseStatusException(HttpStatus.CONFLICT, "Slot is not available!");
+//        }
+//
+//        parkingLot.setIsAvailable(false);
+//
+//        if (!licensePlateProvince.isPresent()){
+//            LicensePlateProvince newLicensePlateProvince = new LicensePlateProvince();
+//            newLicensePlateProvince.setUuid(UUID.randomUUID().toString());
+//            newLicensePlateProvince.setProvinceNameEn(provincePlate);
+//            licensePlateProvinceRepository.save(newLicensePlateProvince);
+//        }
+//        Vehicle newVehicle = null;
+//        if (vehicle.isEmpty()){
+//            newVehicle = new Vehicle();
+//            Site site = siteRepository.findByUuid(sites.stream().findFirst().orElseThrow()).orElseThrow(
+//                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found!")
+//            );
+//            if (!sites.contains(site.getUuid())) {
+//                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is not authorized for site");
+//            }
+//            newVehicle.setUuid(UUID.randomUUID().toString());
+//            newVehicle.setVehicleMake(vehicleMake);
+//            newVehicle.setVehicleModel(vehicleModel);
+//            newVehicle.setNumberPlate(numberPlate);
+//            newVehicle.setLicensePlateProvince(licensePlateProvince.get());
+//            newVehicle.setColor(color);
+//            newVehicle.setIsDeleted(false);
+//            newVehicle.setSites(List.of(site));
+//            newVehicle.setCreatedAt(LocalDateTime.now());
+//            vehicleRepository.save(newVehicle);
+//        }else if(parkingLotDetailRepository.existsByVehicle_UuidAndIsParking(vehicle.get().getUuid(), true)){
+//            throw new ResponseStatusException(HttpStatus.CONFLICT, "Vehicle is parking!");
+//        }
+//
+//        ParkingLotDetail parkingLotDetail = new ParkingLotDetail();
+//        parkingLotDetail.setUuid(UUID.randomUUID().toString());
+//        parkingLotDetail.setIsParking(true);
+//        parkingLotDetail.setTimeIn(LocalDateTime.now());
+//        parkingLotDetail.setParkingSpace(parkingSpace);
+//        parkingLotDetail.setParkingLot(parkingLot);
+//        parkingLotDetail.setVehicle(vehicle.orElse(newVehicle));
+//        parkingLotDetail.setCreatedAt(LocalDateTime.now());
+//        parkingLotDetailRepository.save(parkingLotDetail);
+//
+//        simpMessagingTemplate.convertAndSend(
+//                "/topic/slot-update",
+//                parkingLotDetailMapper.toParkingDetailResponse(parkingLotDetail)
+//        );
+//
+//        return parkingLotDetailMapper.toParkingDetailResponse(parkingLotDetail);
+//
+//    }
 
     @Override
     public VehicleResponse getVehicleByUuid(String uuid) {

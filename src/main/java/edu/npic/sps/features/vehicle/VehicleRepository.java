@@ -7,13 +7,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public interface VehicleRepository extends JpaRepository<Vehicle, Integer> {
 
-
+    @Query("select v from Vehicle v where v.createdAt between ?1 and ?2")
+    Page<Vehicle> findByCreatedAtBetween(LocalDateTime createdAtStart, LocalDateTime createdAtEnd, Pageable pageable);
 
     @Query("select (count(v) > 0) from Vehicle v inner join v.sites sites where sites.uuid in ?1 and v.uuid = ?2")
     boolean existsBySites_UuidInAndUuid(Collection<String> uuids, String uuid);
