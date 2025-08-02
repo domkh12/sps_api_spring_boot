@@ -27,7 +27,7 @@ public class ParkingLotDetail {
     private Boolean isCheckOut;
     @Column(nullable = false, length = 100)
     private Boolean isParking;
-    private Long durationHours;
+    private Long durations;
     private String image;
     private String imageCheckIn;
     private String imageCheckOut;

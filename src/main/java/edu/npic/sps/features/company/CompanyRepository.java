@@ -17,6 +17,10 @@ import java.util.Optional;
 
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, Integer> {
+
+    @Query("select count(c) from Company c")
+    Integer totalCompanies();
+
     @Query("""
             select c from Company c
             where (upper(c.companyName) like upper(concat('%', ?1, '%'))

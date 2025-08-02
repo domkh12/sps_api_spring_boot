@@ -15,6 +15,17 @@ import java.util.Optional;
 
 @Repository
 public interface ParkingLotDetailRepository extends JpaRepository<ParkingLotDetail, Integer> {
+    @Query("select count(p) from ParkingLotDetail p where p.parkingSpace.id = ?1 and p.isCheckOut = true")
+    Long countByParkingSpace_IdAndIsCheckOutTrue(Integer id);
+
+    @Query("select SUM(p.durations) from ParkingLotDetail p where p.parkingSpace.id = ?1 and p.isCheckOut = true")
+    Long sumByParkingSpace_IdAndIsCheckOutTrue(Integer id);
+
+    @Query("select count(p) from ParkingLotDetail p where p.isCheckOut = true")
+    Long countByIsCheckOutTrue();
+
+    @Query("select SUM(p.durations) from ParkingLotDetail p where p.isCheckOut = true")
+    Long sumByIsCheckOutTrue();
 
     @Query("select p from ParkingLotDetail p where upper(p.vehicle.numberPlate) like upper(concat('%', ?1, '%'))")
     Page<ParkingLotDetail> filterParkingLotDetailWithKeywords(String numberPlate, Pageable pageable);

@@ -87,7 +87,7 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public MessageResponse resetPassword(ResetPasswordRequest resetPasswordRequest) {
         EmailVerification emailVerification = emailVerificationRepository.findByToken(resetPasswordRequest.token()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid reset token!")
+                () -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid reset token!")
         );
 
         if (emailVerification.isUsed()){

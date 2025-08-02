@@ -19,7 +19,7 @@ public record ParkingDetailResponse(
         @JsonFormat(pattern = "dd/MMM/yyyy hh:mma")
         LocalDateTime timeOut,
         Boolean isParking,
-        Long durationHours,
+        Long durations,
         String image,
         String imageCheckIn,
         String imageCheckOut,

@@ -5,10 +5,8 @@ import edu.npic.sps.domain.*;
 import edu.npic.sps.features.gender.GenderRepository;
 import edu.npic.sps.features.licensePlateProvince.LicensePlateProvinceRepository;
 import edu.npic.sps.features.licensePlateType.LicensePlateTypeRepository;
-import edu.npic.sps.features.parkingLot.ParkingLotRepository;
 import edu.npic.sps.features.parkingLotDetail.ParkingLotDetailRepository;
 import edu.npic.sps.features.parkingLotDetail.dto.ParkingDetailResponse;
-import edu.npic.sps.features.parkingSpace.ParkingSpaceRepository;
 import edu.npic.sps.features.role.RoleRepository;
 import edu.npic.sps.features.signUpMethod.SignUpMethodRepository;
 import edu.npic.sps.features.site.SiteRepository;
@@ -33,6 +31,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -51,11 +50,9 @@ public class VehicleServiceImpl implements VehicleService{
     private final LicensePlateTypeRepository licensePlateTypeRepository;
     private final LicensePlateProvinceRepository licensePlateProvinceRepository;
     private final SiteRepository siteRepository;
-    private final ParkingSpaceRepository parkingSpaceRepository;
     private final ParkingLotDetailRepository parkingLotDetailRepository;
     private final ParkingLotDetailMapper parkingLotDetailMapper;
     private final SimpMessagingTemplate simpMessagingTemplate;
-    private final ParkingLotRepository parkingLotRepository;
     private final PasswordEncoder passwordEncoder;
     private final GenderRepository genderRepository;
     private final SignUpMethodRepository signUpMethodRepository;
@@ -76,11 +73,11 @@ public class VehicleServiceImpl implements VehicleService{
 
         LocalDateTime timeIn = parkingLotDetail.getTimeIn();
         LocalDateTime timeOut = LocalDateTime.now();
-        Long durationHours = java.time.Duration.between(timeIn, timeOut).toHours();
+        Long durations = Duration.between(timeIn, timeOut).toMinutes();
 
         parkingLotDetail.setIsParking(false);
         parkingLotDetail.setTimeOut(timeOut);
-        parkingLotDetail.setDurationHours(durationHours);
+        parkingLotDetail.setDurations(durations);
         parkingLotDetail.setIsCheckOut(true);
         parkingLotDetail.setCreatedAt(LocalDateTime.now());
         parkingLotDetail.setImageCheckOut(cameraRequest.imageCheckOut());
@@ -101,7 +98,7 @@ public class VehicleServiceImpl implements VehicleService{
                 provinceName,
                 timeIn,
                 timeOut,
-                durationHours,
+                durations,
                 savedParkingLotDetail.getImageCheckOut()
         );
 

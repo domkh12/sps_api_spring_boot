@@ -21,6 +21,9 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
 
+    @Query("select count(u) from User u")
+    Integer totalUserCount();
+
     @Transactional
     @Modifying
     @Query(value =

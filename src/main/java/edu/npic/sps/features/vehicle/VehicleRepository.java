@@ -14,6 +14,9 @@ import java.util.Optional;
 
 public interface VehicleRepository extends JpaRepository<Vehicle, Integer> {
 
+    @Query("select count(v) from Vehicle v")
+    Integer totalVehicleCount ();
+
     @Query("select v from Vehicle v where v.createdAt between ?1 and ?2")
     Page<Vehicle> findByCreatedAtBetween(LocalDateTime createdAtStart, LocalDateTime createdAtEnd, Pageable pageable);
 

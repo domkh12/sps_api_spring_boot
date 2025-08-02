@@ -16,6 +16,18 @@ import java.util.Optional;
 @Repository
 public interface ParkingLotRepository extends JpaRepository<ParkingLot, Integer> {
 
+    @Query("select count(p) from ParkingLot p where p.parkingSpace.id = ?1 and p.isAvailable = false")
+    Integer countByParkingSpace_IdAndIsAvailableFalse(Integer id);
+
+    @Query("select count(p) from ParkingLot p where p.parkingSpace.id = ?1")
+    Integer countByParkingSpace_Id(Integer id);
+
+    @Query("select count(p) from ParkingLot p where p.isAvailable = false")
+    Integer OccupiedSlots();
+
+    @Query("select count(p) from ParkingLot p")
+    Integer totalParkingSlotsCount();
+
     @Query("select (count(p) > 0) from ParkingLot p where p.parkingSpace.site.uuid in ?1 and p.uuid = ?2")
     boolean existsByParkingSpace_Site_UuidInAndUuid(Collection<String> uuids, String uuid);
 

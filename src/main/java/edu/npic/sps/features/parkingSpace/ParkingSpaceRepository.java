@@ -16,6 +16,12 @@ import java.util.Optional;
 @Repository
 public interface ParkingSpaceRepository extends JpaRepository<ParkingSpace, Integer> {
 
+    @Query("select count(p) from ParkingSpace p where p.site.id = ?1")
+    Integer countBySite_Id(Integer id);
+
+    @Query("select count(p) from ParkingSpace p")
+    Integer totalParkingAreasCount();
+
     @Query("select (count(p) > 0) from ParkingSpace p where p.site.uuid in ?1 and p.uuid = ?2")
     boolean existsBySite_UuidInAndUuid(Collection<String> uuids, String uuid);
 

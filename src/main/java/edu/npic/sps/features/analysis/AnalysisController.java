@@ -1,5 +1,6 @@
 package edu.npic.sps.features.analysis;
 
+import edu.npic.sps.features.analysis.dto.AnalysisResponse;
 import edu.npic.sps.features.analysis.dto.TotalCountResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class AnalysisController {
 
     private final AnalysisService analysisService;
+
+    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    AnalysisResponse getAnalysis(){
+        return analysisService.getAnalysis();
+    }
 
     @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
     @GetMapping("/total-counts")
