@@ -5,6 +5,7 @@ import edu.npic.sps.domain.*;
 import edu.npic.sps.features.auth.dto.*;
 import edu.npic.sps.features.email.EmailService;
 import edu.npic.sps.features.gender.GenderRepository;
+import edu.npic.sps.features.clientInfo.ClientInfoService;
 import edu.npic.sps.features.totp.TotpService;
 import edu.npic.sps.features.user.UserRepository;
 import edu.npic.sps.features.user.UserService;
@@ -68,6 +69,7 @@ public class AuthServiceImpl implements AuthService{
     private final JwtUtils jwtUtils;
     private final GenderRepository genderRepository;
     private final EmailService emailService;
+    private final ClientInfoService clientInfoService;
 
     @Value("${frontend.url}")
     String frontendUrl;
@@ -303,7 +305,7 @@ public class AuthServiceImpl implements AuthService{
     }
 
     @Override
-    public ResponseEntity<JwtResponse> login(LoginRequest loginRequest, HttpServletResponse response) {
+    public ResponseEntity<JwtResponse> login(LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
 
         Authentication auth = new UsernamePasswordAuthenticationToken(
                 loginRequest.email(),
@@ -379,6 +381,8 @@ public class AuthServiceImpl implements AuthService{
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+
+        clientInfoService.storeClientInfo(request, user.getId(), "LOGIN_SUCCESS", "Credential login");
 
         return ResponseEntity.ok(JwtResponse.builder()
                 .tokenType("Bearer")

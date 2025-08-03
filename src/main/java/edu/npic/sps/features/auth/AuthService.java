@@ -19,7 +19,7 @@ public interface AuthService {
 
     ResponseEntity<JwtResponse> refreshToken(HttpServletRequest request, HttpServletResponse response);
 
-    ResponseEntity<JwtResponse> login(LoginRequest loginRequest, HttpServletResponse response);
+    ResponseEntity<JwtResponse> login(LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request);
 
     void register(CreateUserRegister createUserRegister) throws MessagingException;
 

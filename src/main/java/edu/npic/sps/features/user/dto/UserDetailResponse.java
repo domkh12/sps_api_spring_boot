@@ -14,7 +14,7 @@ import java.util.List;
 
 @Builder
 public record UserDetailResponse(
-
+        Integer id,
         String uuid,
         String fullName,
         LocalDate dateOfBirth,
