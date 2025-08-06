@@ -21,22 +21,22 @@ public class WebSocketEventListener {
 
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectEvent event) {
-        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-        // Assuming you have a way to get the uuid from the headers or the principal
-        String uuid = headerAccessor.getNativeHeader("uuid").get(0); // Get uuid from headers
-        headerAccessor.getSessionAttributes().put("uuid", uuid); // Store uuid in session attributes
-        log.info("Received a new session connect event: {}", headerAccessor);
+//        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+//        // Assuming you have a way to get the uuid from the headers or the principal
+//        String uuid = headerAccessor.getNativeHeader("uuid").get(0); // Get uuid from headers
+//        headerAccessor.getSessionAttributes().put("uuid", uuid); // Store uuid in session attributes
+//        log.info("Received a new session connect event: {}", headerAccessor);
     }
 
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
-        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-        // Retrieve the session attributes
-        String uuid = (String) headerAccessor.getSessionAttributes().get("uuid");
-        // Now you can use the uuid for your logic
-        log.info("Received a new session disconnect event: {}", headerAccessor);
-
-        userServiceImpl.connectedUsers(uuid, new IsOnlineRequest(false));
+//        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+//        // Retrieve the session attributes
+//        String uuid = (String) headerAccessor.getSessionAttributes().get("uuid");
+//        // Now you can use the uuid for your logic
+//        log.info("Received a new session disconnect event: {}", headerAccessor);
+//
+//        userServiceImpl.connectedUsers(uuid, new IsOnlineRequest(false));
 
     }
 

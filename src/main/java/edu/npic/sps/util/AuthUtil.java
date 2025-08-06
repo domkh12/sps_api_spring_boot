@@ -19,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthUtil {
     private final UserRepository userRepository;
+    private final JwtDecoder jwtDecoder;
 
     private Jwt getJwtFromAuthentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -27,6 +28,15 @@ public class AuthUtil {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated user");
         }
         return (Jwt) authentication.getPrincipal();
+    }
+
+    public String getEmailFromJwtAccessToken(String token) {
+        try {
+            Jwt jwt = jwtDecoder.decode(token);
+            return jwt.getId();
+        } catch (JwtException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid JWT token");
+        }
     }
 
 

@@ -16,6 +16,9 @@ import java.util.Optional;
 @Repository
 public interface SiteRepository extends JpaRepository<Site, Integer> {
 
+    @Query("select s from Site s where s.uuid = ?1")
+    List<Site> findBranchByUuid(String uuid);
+
     @Query("select count(s) from Site s where s.company.id = ?1")
     Integer countByCompany_Id(Integer id);
 

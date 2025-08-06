@@ -5,6 +5,7 @@ public record CameraRequest(
         String provincePlate,
         String vehicleModel,
         String vehicleMake,
+        String branchUuid,
         String color,
         String image,
         String imageCheckIn,

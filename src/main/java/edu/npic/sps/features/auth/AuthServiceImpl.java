@@ -472,7 +472,7 @@ public class AuthServiceImpl implements AuthService{
                     .message("Verified 2FA")
                     .build();
         }else {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid 2FA code");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid 2FA code");
         }
     }
 
@@ -485,7 +485,7 @@ public class AuthServiceImpl implements AuthService{
         boolean isValid = userService.validate2FACode(user.getId(), code);
 
         if (!isValid){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid 2FA code");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid 2FA code");
 
         }else {
 

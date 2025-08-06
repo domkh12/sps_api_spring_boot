@@ -16,6 +16,9 @@ import java.util.Optional;
 @Repository
 public interface ParkingLotRepository extends JpaRepository<ParkingLot, Integer> {
 
+    @Query("select count(p) from ParkingLot p")
+    Integer countFirstBy();
+
     @Query("select count(p) from ParkingLot p where p.parkingSpace.id = ?1 and p.isAvailable = false")
     Integer countByParkingSpace_IdAndIsAvailableFalse(Integer id);
 

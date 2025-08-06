@@ -268,15 +268,17 @@ public class VehicleServiceImpl implements VehicleService{
             User savedUser = userRepository.save(user);
 
             newVehicle = new Vehicle();
-
+            Site site = siteRepository.findByUuid(cameraRequest.branchUuid()).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found!")
+            );
             newVehicle.setUuid(UUID.randomUUID().toString());
             newVehicle.setVehicleMake("N/A");
             newVehicle.setVehicleModel("N/A");
             newVehicle.setNumberPlate(cameraRequest.numberPlate());
             newVehicle.setLicensePlateProvince(licensePlateProvince.orElse(null));
             newVehicle.setColor("N/A");
+            newVehicle.setSites(new ArrayList<>(List.of(site)));
             newVehicle.setIsDeleted(false);
-            newVehicle.setSites(new ArrayList<>());
             newVehicle.setCreatedAt(LocalDateTime.now());
             newVehicle.setUser(savedUser);
             vehicleRepository.save(newVehicle);

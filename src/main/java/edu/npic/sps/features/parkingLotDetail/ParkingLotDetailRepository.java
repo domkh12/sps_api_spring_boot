@@ -15,6 +15,16 @@ import java.util.Optional;
 
 @Repository
 public interface ParkingLotDetailRepository extends JpaRepository<ParkingLotDetail, Integer> {
+
+    @Query("select count(p) from ParkingLotDetail p where p.isCheckOut = true and p.timeOut between ?1 and ?2")
+    Long countByIsCheckOutTrueAndTimeOutBetween(LocalDateTime timeOutStart, LocalDateTime timeOutEnd);
+
+    @Query("select SUM(p.durations) from ParkingLotDetail p where p.isCheckOut = true and p.timeOut between ?1 and ?2")
+    Long sumByIsCheckOutTrueAndTimeOutBetween(LocalDateTime timeOutStart, LocalDateTime timeOutEnd);
+
+    @Query("select count(p) from ParkingLotDetail p where p.timeIn between ?1 and ?2")
+    Integer countByTimeInBetween(LocalDateTime timeInStart, LocalDateTime timeInEnd);
+
     @Query("select count(p) from ParkingLotDetail p where p.parkingSpace.id = ?1 and p.isCheckOut = true")
     Long countByParkingSpace_IdAndIsCheckOutTrue(Integer id);
 

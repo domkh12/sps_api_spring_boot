@@ -15,17 +15,23 @@ import edu.npic.sps.features.vehicle.VehicleRepository;
 import edu.npic.sps.util.AuthUtil;
 import edu.npic.sps.util.ColorUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AnalysisServiceImpl implements AnalysisService{
@@ -38,6 +44,8 @@ public class AnalysisServiceImpl implements AnalysisService{
     private final CompanyRepository companyRepository;
     private final SiteRepository siteRepository;
     private final ParkingLotDetailRepository parkingLotDetailRepository;
+
+
 
     @Override
     public AnalysisResponse getAnalysis() {
@@ -150,6 +158,33 @@ public class AnalysisServiceImpl implements AnalysisService{
                 }
         ).toList();
 
+        Integer totalSlot = parkingLotRepository.countFirstBy();
+        List<HourlyOccupancyResponse> hourlyOccupancyResponses = getHour().stream().map(
+                hour -> HourlyOccupancyResponse.builder()
+                        .hour(formatHour(hour))
+                        .occupied(parkingLotDetailRepository.countByTimeInBetween(hour, hour.plusHours(1)))
+                        .total(totalSlot)
+                        .build()
+        ).toList();
+
+        List<WeeklyOccupancyResponse> weeklyOccupancyResponses = getDays().stream().map(
+                day -> {
+                    Long parkingDurationDaily = parkingLotDetailRepository.sumByIsCheckOutTrueAndTimeOutBetween(day, day.plusDays(1));
+                    Long parkingCountDaily = parkingLotDetailRepository.countByIsCheckOutTrueAndTimeOutBetween(day, day.plusDays(1));
+                    double avgDailyParking = 0.0;
+                    if (parkingDurationDaily != null){
+                        avgDailyParking = BigDecimal.valueOf ((parkingDurationDaily /60.0) / (double) parkingCountDaily)
+                                .setScale(2, RoundingMode.HALF_UP)
+                                .doubleValue();
+                    }
+
+                    return WeeklyOccupancyResponse.builder()
+                            .day(formatDay(day))
+                            .occupancy(parkingLotDetailRepository.countByTimeInBetween(day, day.plusDays(1)))
+                            .avgStayTime(avgDailyParking)
+                            .build();
+                }
+        ).toList();
 
         return  AnalysisResponse.builder()
                 .totalStats(TotalStatResponse.builder()
@@ -164,6 +199,8 @@ public class AnalysisServiceImpl implements AnalysisService{
                         .build())
                 .companies(companyResponses)
                 .branchData(branchResponses)
+                .hourlyData(hourlyOccupancyResponses)
+                .weeklyData(weeklyOccupancyResponses)
                 .build();
     }
 
@@ -235,4 +272,48 @@ public class AnalysisServiceImpl implements AnalysisService{
 
     return null;
     }
+
+    private String formatHour(LocalDateTime dateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ha");
+        return dateTime.format(formatter);
+    }
+
+    private String formatDay(LocalDateTime dateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("E");
+        return dateTime.format(formatter);
+    }
+
+    private List<LocalDateTime> getDays() {
+        List<LocalDateTime> days = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+
+        LocalDateTime currentDay = now.truncatedTo(ChronoUnit.DAYS).minusDays(6);
+        LocalDateTime endDay = now.truncatedTo(ChronoUnit.DAYS);
+
+        // Generate 7 day ending with the current day
+        while (currentDay.isBefore(endDay) || currentDay.equals(endDay)) {
+
+            days.add(currentDay);
+            currentDay = currentDay.plusDays(1);
+        }
+        return days;
+    }
+
+    private List<LocalDateTime> getHour() {
+        List<LocalDateTime> hours = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+
+        LocalDateTime currentHour = now.truncatedTo(ChronoUnit.HOURS).minusHours(11);
+        LocalDateTime endHour = now.truncatedTo(ChronoUnit.HOURS);
+
+        // Generate 24 hours ending with the current hour
+        while (currentHour.isBefore(endHour) || currentHour.equals(endHour)) {
+
+            hours.add(currentHour);
+            currentHour = currentHour.plusHours(1);
+        }
+
+        return hours;
+    }
+
 }

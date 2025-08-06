@@ -8,6 +8,8 @@ import java.util.List;
 public record AnalysisResponse(
         TotalStatResponse totalStats,
         List<AnalysisCompanyResponse> companies,
-        List<AnalysisBranchResponse> branchData
+        List<AnalysisBranchResponse> branchData,
+        List<HourlyOccupancyResponse> hourlyData,
+        List<WeeklyOccupancyResponse> weeklyData
 ) {
 }

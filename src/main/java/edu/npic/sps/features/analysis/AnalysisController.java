@@ -1,6 +1,7 @@
 package edu.npic.sps.features.analysis;
 
 import edu.npic.sps.features.analysis.dto.AnalysisResponse;
+import edu.npic.sps.features.analysis.dto.HourlyOccupancyResponse;
 import edu.npic.sps.features.analysis.dto.TotalCountResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
