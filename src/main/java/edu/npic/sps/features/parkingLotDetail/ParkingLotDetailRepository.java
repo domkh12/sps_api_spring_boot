@@ -16,11 +16,68 @@ import java.util.Optional;
 @Repository
 public interface ParkingLotDetailRepository extends JpaRepository<ParkingLotDetail, Integer> {
 
+    @Query("select count(p) from ParkingLotDetail p where p.isCheckIn = true and p.site.uuid in ?1")
+    Long countLongByIsCheckInTrueAndSite_UuidIn(Collection<String> uuids);
+
+    @Query("select SUM(p.durations) from ParkingLotDetail p where p.isCheckIn = true and p.site.uuid in ?1")
+    Long sumLongByIsCheckInTrueAndSite_UuidIn(Collection<String> uuids);
+
+    @Query("select count(p) from ParkingLotDetail p where p.isCheckIn = true and p.site.uuid in ?1")
+    Integer countByIsCheckInTrueAndSite_UuidIn(Collection<String> uuids);
+
+    @Query("select count(p) from ParkingLotDetail p where p.isCheckIn = true")
+    Integer totalCheckIn();
+
+    @Query("""
+            select p from ParkingLotDetail p
+            where p.isCheckOut = true and upper(p.vehicle.numberPlate) like upper(concat('%', ?1, '%')) and p.site.uuid = ?2""")
+    Page<ParkingLotDetail> filterCheckOutByKeywordsManager(String numberPlate, String uuid, Pageable pageable);
+
+    @Query("""
+            select p from ParkingLotDetail p
+            where p.isCheckOut = true and upper(p.vehicle.numberPlate) like upper(concat('%', ?1, '%')) and p.createdAt between ?2 and ?3 and p.site.uuid = ?4""")
+    Page<ParkingLotDetail> filterCheckOutWithDateRangeManager(String numberPlate, LocalDateTime createdAtStart, LocalDateTime createdAtEnd, String uuid, Pageable pageable);
+
+
+    @Query("select p from ParkingLotDetail p where p.isCheckOut = true and p.site.uuid = ?1")
+    Page<ParkingLotDetail> findByIsCheckOutTrueAndSite_Uuid(String uuid, Pageable pageable);
+
+    @Query("""
+            select p from ParkingLotDetail p
+            where upper(p.vehicle.numberPlate) like upper(concat('%', ?1, '%')) and p.site.uuid = ?2""")
+    Page<ParkingLotDetail> filterParkingLotDetailWithKeywordsManager(String numberPlate, String uuid, Pageable pageable);
+
+    @Query("""
+            select p from ParkingLotDetail p
+            where upper(p.vehicle.numberPlate) like upper(concat('%', ?1, '%')) and p.createdAt between ?2 and ?3 and p.site.uuid = ?4""")
+    Page<ParkingLotDetail> filterParkingLotDetailWithDateRangeManager(String numberPlate, LocalDateTime createdAtStart, LocalDateTime createdAtEnd, String uuid, Pageable pageable);
+
+
+    @Query("select p from ParkingLotDetail p where p.site.uuid = ?1")
+    Page<ParkingLotDetail> findBySite_Uuid(String uuid, Pageable pageable);
+
+    @Query("select p from ParkingLotDetail p where p.isCheckIn = true and p.site.uuid = ?1")
+    Page<ParkingLotDetail> findByIsCheckInTrueAndSite_Uuid(String uuid, Pageable pageable);
+
+    @Query("""
+            select count(p) from ParkingLotDetail p
+            where p.isCheckOut = true and p.timeOut between ?1 and ?2 and p.site.uuid in ?3""")
+    Long countByIsCheckOutTrueAndTimeOutBetweenAndSite_UuidIn(LocalDateTime timeOutStart, LocalDateTime timeOutEnd, Collection<String> uuids);
+
+
     @Query("select count(p) from ParkingLotDetail p where p.isCheckOut = true and p.timeOut between ?1 and ?2")
     Long countByIsCheckOutTrueAndTimeOutBetween(LocalDateTime timeOutStart, LocalDateTime timeOutEnd);
 
+    @Query("""
+            select SUM(p.durations) from ParkingLotDetail p
+            where p.isCheckOut = true and p.timeOut between ?1 and ?2 and p.site.uuid in ?3""")
+    Long sumByIsCheckOutTrueAndTimeOutBetweenAndSite_UuidIn(LocalDateTime timeOutStart, LocalDateTime timeOutEnd, Collection<String> uuids);
+
     @Query("select SUM(p.durations) from ParkingLotDetail p where p.isCheckOut = true and p.timeOut between ?1 and ?2")
     Long sumByIsCheckOutTrueAndTimeOutBetween(LocalDateTime timeOutStart, LocalDateTime timeOutEnd);
+
+    @Query("select count(p) from ParkingLotDetail p where p.timeIn between ?1 and ?2 and p.site.uuid in ?3")
+    Integer countByTimeInBetweenAndSite_UuidIn(LocalDateTime timeInStart, LocalDateTime timeInEnd, Collection<String> uuids);
 
     @Query("select count(p) from ParkingLotDetail p where p.timeIn between ?1 and ?2")
     Integer countByTimeInBetween(LocalDateTime timeInStart, LocalDateTime timeInEnd);
@@ -71,10 +128,22 @@ public interface ParkingLotDetailRepository extends JpaRepository<ParkingLotDeta
 
     @Query("""
             select p from ParkingLotDetail p
+            where p.isCheckIn = true and upper(p.vehicle.numberPlate) like upper(concat('%', ?1, '%')) and p.site.uuid = ?2""")
+    Page<ParkingLotDetail> filterCheckInByKeywordsManager(String numberPlate, String uuid, Pageable pageable);
+
+
+    @Query("""
+            select p from ParkingLotDetail p
             where p.isCheckIn = true
             and (upper(p.vehicle.numberPlate) like upper(concat('%', ?1, '%')))
             """)
     Page<ParkingLotDetail> filterCheckInByKeywords(String keywords, Pageable pageable);
+
+    @Query("""
+            select p from ParkingLotDetail p
+            where p.isCheckIn = true and upper(p.vehicle.numberPlate) like upper(concat('%', ?1, '%')) and p.createdAt between ?2 and ?3 and p.site.uuid = ?4""")
+    Page<ParkingLotDetail> filterCheckInWithDateRangeManager(String numberPlate, LocalDateTime createdAtStart, LocalDateTime createdAtEnd, String uuid, Pageable pageable);
+
 
     @Query("""
            select p from ParkingLotDetail p

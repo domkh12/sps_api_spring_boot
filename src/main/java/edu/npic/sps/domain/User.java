@@ -74,4 +74,9 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "site_id", referencedColumnName = "id")
     )
     private List<Site> sites;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(joinColumns = @JoinColumn(name="user_id", referencedColumnName = "id"),
+               inverseJoinColumns = @JoinColumn(name="notification_id", referencedColumnName = "id"))
+    private List<Notifications> notifications;
 }

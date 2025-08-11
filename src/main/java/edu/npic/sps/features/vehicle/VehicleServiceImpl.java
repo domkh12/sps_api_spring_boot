@@ -107,6 +107,9 @@ public class VehicleServiceImpl implements VehicleService{
 
     @Override
     public Page<ParkingDetailResponse> filterCheckOut(int pageNo, int pageSize, String keywords, LocalDateTime dateFrom, LocalDateTime dateTo) {
+        boolean isManager = authUtil.isManagerLoggedUser();
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        List<String> siteUuid = authUtil.loggedUserSites();
 
         if (pageNo < 1 || pageSize < 1) {
             throw new ResponseStatusException(
@@ -118,20 +121,38 @@ public class VehicleServiceImpl implements VehicleService{
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
         Page<ParkingLotDetail> parkingLotDetailPage = Page.empty();
-
-        if (dateFrom != null && dateTo != null){
-            parkingLotDetailPage = parkingLotDetailRepository.filterCheckOutWithDateRange(
-                    keywords,
-                    dateFrom,
-                    dateTo,
-                    pageRequest
-            );
-        }else {
-            parkingLotDetailPage = parkingLotDetailRepository.filterCheckOutByKeywords(
-                    keywords,
-                    pageRequest
-            );
+        if (isAdmin) {
+            if (dateFrom != null && dateTo != null){
+                parkingLotDetailPage = parkingLotDetailRepository.filterCheckOutWithDateRange(
+                        keywords,
+                        dateFrom,
+                        dateTo,
+                        pageRequest
+                );
+            }else {
+                parkingLotDetailPage = parkingLotDetailRepository.filterCheckOutByKeywords(
+                        keywords,
+                        pageRequest
+                );
+            }
+        }else if (isManager) {
+            if (dateFrom != null && dateTo != null){
+                parkingLotDetailPage = parkingLotDetailRepository.filterCheckOutWithDateRangeManager(
+                        keywords,
+                        dateFrom,
+                        dateTo,
+                        siteUuid.getFirst(),
+                        pageRequest
+                );
+            }else {
+                parkingLotDetailPage = parkingLotDetailRepository.filterCheckOutByKeywordsManager(
+                        keywords,
+                        siteUuid.getFirst(),
+                        pageRequest
+                );
+            }
         }
+
 
         return parkingLotDetailPage.map(parkingLotDetailMapper::toParkingDetailResponse);
 
@@ -139,6 +160,9 @@ public class VehicleServiceImpl implements VehicleService{
 
     @Override
     public Page<ParkingDetailResponse> getAllCheckOut(int pageNo, int pageSize) {
+        boolean isManager = authUtil.isManagerLoggedUser();
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        List<String> siteUuid = authUtil.loggedUserSites();
 
         if (pageNo < 1 || pageSize < 1) {
             throw new ResponseStatusException(
@@ -146,10 +170,15 @@ public class VehicleServiceImpl implements VehicleService{
                     "Page size and page no must be greater than 1"
             );
         }
+        Page<ParkingLotDetail> parkingLotDetails = Page.empty();
 
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
-        Page<ParkingLotDetail> parkingLotDetails = parkingLotDetailRepository.findByIsCheckOutTrue(pageRequest);
+        if (isAdmin) {
+            parkingLotDetails = parkingLotDetailRepository.findByIsCheckOutTrue(pageRequest);
+        }else if (isManager) {
+            parkingLotDetails = parkingLotDetailRepository.findByIsCheckOutTrueAndSite_Uuid(siteUuid.getFirst(), pageRequest);
+        }
 
         return parkingLotDetails.map(parkingLotDetailMapper::toParkingDetailResponse);
 
@@ -158,6 +187,10 @@ public class VehicleServiceImpl implements VehicleService{
     @Override
     public Page<ParkingDetailResponse> filterCheckIn(int pageNo, int pageSize, String keywords, LocalDateTime dateFrom, LocalDateTime dateTo) {
 
+        boolean isManager = authUtil.isManagerLoggedUser();
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        List<String> siteUuid = authUtil.loggedUserSites();
+
         if (pageNo < 1 || pageSize < 1) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -169,18 +202,36 @@ public class VehicleServiceImpl implements VehicleService{
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
         Page<ParkingLotDetail> parkingLotDetailPage = Page.empty();
 
-        if (dateFrom != null && dateTo != null){
-            parkingLotDetailPage = parkingLotDetailRepository.filterCheckInWithDateRange(
-                    keywords,
-                    dateFrom,
-                    dateTo,
-                    pageRequest
-            );
-        }else{
-            parkingLotDetailPage = parkingLotDetailRepository.filterCheckInByKeywords(
-                    keywords,
-                    pageRequest
-            );
+        if (isAdmin) {
+            if (dateFrom != null && dateTo != null){
+                parkingLotDetailPage = parkingLotDetailRepository.filterCheckInWithDateRange(
+                        keywords,
+                        dateFrom,
+                        dateTo,
+                        pageRequest
+                );
+            }else{
+                parkingLotDetailPage = parkingLotDetailRepository.filterCheckInByKeywords(
+                        keywords,
+                        pageRequest
+                );
+            }
+        }else if (isManager) {
+            if (dateFrom != null && dateTo != null){
+                parkingLotDetailPage = parkingLotDetailRepository.filterCheckInWithDateRangeManager(
+                        keywords,
+                        dateFrom,
+                        dateTo,
+                        siteUuid.getFirst(),
+                        pageRequest
+                );
+            }else{
+                parkingLotDetailPage = parkingLotDetailRepository.filterCheckInByKeywordsManager(
+                        keywords,
+                        siteUuid.getFirst(),
+                        pageRequest
+                );
+            }
         }
 
         return parkingLotDetailPage.map(parkingLotDetailMapper::toParkingDetailResponse);
@@ -189,6 +240,9 @@ public class VehicleServiceImpl implements VehicleService{
 
     @Override
     public Page<ParkingDetailResponse> getAllCheckIn(int pageNo, int pageSize) {
+        boolean isManager = authUtil.isManagerLoggedUser();
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        List<String> siteUuid = authUtil.loggedUserSites();
 
         if (pageNo < 1 || pageSize < 1) {
             throw new ResponseStatusException(
@@ -199,7 +253,12 @@ public class VehicleServiceImpl implements VehicleService{
 
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
-        Page<ParkingLotDetail> parkingLotDetails = parkingLotDetailRepository.findByIsCheckInTrue(pageRequest);
+        Page<ParkingLotDetail> parkingLotDetails = Page.empty();
+        if (isAdmin) {
+            parkingLotDetails = parkingLotDetailRepository.findByIsCheckInTrue(pageRequest);
+        } else if (isManager) {
+            parkingLotDetails = parkingLotDetailRepository.findByIsCheckInTrueAndSite_Uuid(siteUuid.getFirst(), pageRequest);
+        }
 
         return parkingLotDetails.map(parkingLotDetailMapper::toParkingDetailResponse);
 
@@ -232,6 +291,10 @@ public class VehicleServiceImpl implements VehicleService{
         Optional<Vehicle> vehicle = vehicleRepository.findByNumberPlate(cameraRequest.numberPlate());
 
         Optional<LicensePlateProvince> licensePlateProvince = licensePlateProvinceRepository.findByAliasIgnoreCase(cameraRequest.provincePlate().toLowerCase());
+
+        Site site = siteRepository.findByUuid(cameraRequest.branchUuid()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found!")
+        );
 
         Vehicle newVehicle = null;
         if (vehicle.isEmpty()){
@@ -268,9 +331,6 @@ public class VehicleServiceImpl implements VehicleService{
             User savedUser = userRepository.save(user);
 
             newVehicle = new Vehicle();
-            Site site = siteRepository.findByUuid(cameraRequest.branchUuid()).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found!")
-            );
             newVehicle.setUuid(UUID.randomUUID().toString());
             newVehicle.setVehicleMake("N/A");
             newVehicle.setVehicleModel("N/A");
@@ -297,6 +357,7 @@ public class VehicleServiceImpl implements VehicleService{
         parkingLotDetail.setIsCheckOut(false);
         parkingLotDetail.setImage(cameraRequest.image());
         parkingLotDetail.setImageCheckIn(cameraRequest.image());
+        parkingLotDetail.setSite(site);
         parkingLotDetail.setCreatedAt(checkInTime);
         ParkingLotDetail savedParkingLotDetail = parkingLotDetailRepository.save(parkingLotDetail);
 
@@ -304,7 +365,6 @@ public class VehicleServiceImpl implements VehicleService{
                 "/topic/check-in",
                 parkingLotDetailMapper.toParkingDetailResponse(savedParkingLotDetail)
         );
-
 
         // 🔥 NEW: Send Telegram notification for check-in
         Vehicle finalVehicle = vehicle.orElse(newVehicle);

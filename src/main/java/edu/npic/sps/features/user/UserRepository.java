@@ -20,9 +20,15 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
+    @Query("""
+            select count(u) from User u inner join u.sites sites inner join u.roles roles
+            where u.uuid <> ?1 and sites.uuid in ?2 and upper(roles.name) = 'USER'""")
+    Integer countUserBySite(String uuid, Collection<String> uuids);
 
-    @Query("select count(u) from User u")
-    Integer totalUserCount();
+
+    @Query("select count(u) from User u where u.uuid <> ?1")
+    Integer countByUuidNot(String uuid);
+
 
     @Transactional
     @Modifying
@@ -34,8 +40,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             """,
             nativeQuery = true)
     void deleteByUuid(String uuid);
-
-    String countByCreatedAt(LocalDateTime createdAt);
 
     @Query("""
             select count(u) from User u inner join u.sites sites inner join u.roles roles

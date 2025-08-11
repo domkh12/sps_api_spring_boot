@@ -48,4 +48,7 @@ public class Site {
 
     @ManyToMany(mappedBy = "sites")
     private List<Vehicle> vehicles;
+
+    @OneToMany(mappedBy = "site")
+    private List<ParkingLotDetail> parkingLotDetails;
 }

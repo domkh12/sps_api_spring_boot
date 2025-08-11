@@ -22,7 +22,7 @@ public class Vehicle {
     private Integer id;
     @Column(unique = true, nullable = false)
     private String uuid;
-    @Column(unique = true, length = 50)
+    @Column(nullable = false, length = 50)
     private String numberPlate;
 
     // optional

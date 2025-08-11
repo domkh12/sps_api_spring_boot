@@ -42,4 +42,7 @@ public class ParkingLotDetail {
     @ManyToOne
     private ParkingLot parkingLot;
 
+    @ManyToOne
+    private Site site;
+
 }
