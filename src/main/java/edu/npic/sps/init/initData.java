@@ -51,7 +51,7 @@ public class initData {
     private final LicensePlateProvinceRepository licensePlateProvinceRepository;
     private final CompanyTypeRepository companyTypeRepository;
 
-//    @PostConstruct
+    @PostConstruct
     public void init() {
         try {
             initCompanyTypeData();

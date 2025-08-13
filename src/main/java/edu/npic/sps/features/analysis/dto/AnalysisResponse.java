@@ -1,6 +1,5 @@
 package edu.npic.sps.features.analysis.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 
 import java.util.List;
@@ -13,6 +12,7 @@ public record AnalysisResponse(
         List<HourlyOccupancyResponse> hourlyData,
         List<WeeklyOccupancyResponse> weeklyData,
         List<ParkingAreasUtilizationResponse> parkingAreasUtilization,
-        List<ParkingAreasDetailsResponse> parkingAreasDetails
+        List<ParkingAreasDetailsResponse> parkingAreasDetails,
+        List<HourlyVehicleExitResponse> hourlyVehicleExitResponse
 ) {
 }

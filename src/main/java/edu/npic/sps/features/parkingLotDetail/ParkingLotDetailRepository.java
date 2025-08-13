@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -15,7 +16,6 @@ import java.util.Optional;
 
 @Repository
 public interface ParkingLotDetailRepository extends JpaRepository<ParkingLotDetail, Integer> {
-
     @Query("select count(p) from ParkingLotDetail p where p.isCheckIn = true and p.site.uuid in ?1")
     Long countLongByIsCheckInTrueAndSite_UuidIn(Collection<String> uuids);
 
@@ -78,6 +78,8 @@ public interface ParkingLotDetailRepository extends JpaRepository<ParkingLotDeta
 
     @Query("select count(p) from ParkingLotDetail p where p.timeIn between ?1 and ?2 and p.site.uuid in ?3")
     Integer countByTimeInBetweenAndSite_UuidIn(LocalDateTime timeInStart, LocalDateTime timeInEnd, Collection<String> uuids);
+
+
 
     @Query("select count(p) from ParkingLotDetail p where p.timeIn between ?1 and ?2")
     Integer countByTimeInBetween(LocalDateTime timeInStart, LocalDateTime timeInEnd);

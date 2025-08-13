@@ -21,10 +21,12 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +68,7 @@ public class AnalysisServiceImpl implements AnalysisService {
         List<AnalysisCompanyResponse> companyResponses = new ArrayList<>();
         List<AnalysisBranchResponse> branchResponses = new ArrayList<>();
         List<HourlyOccupancyResponse> hourlyOccupancyResponses = new ArrayList<>();
+        List<HourlyVehicleExitResponse> hourlyVehicleExitResponse = new ArrayList<>();
         List<WeeklyOccupancyResponse> weeklyOccupancyResponses = new ArrayList<>();
         List<ParkingAreasUtilizationResponse> parkingAreasUtilization = new ArrayList<>();
         List<ParkingAreasDetailsResponse> parkingAreasDetails = new ArrayList<>();
@@ -160,7 +163,6 @@ public class AnalysisServiceImpl implements AnalysisService {
 
             branchResponses = branches.stream().map(
                     branch -> {
-
                         int totalSlots = branch.getParkingSpaces().stream().mapToInt(ParkingSpace::getLotQty).sum();
                         int sumOccupiedSlots = branch.getParkingSpaces().stream()
                                 .mapToInt(space -> parkingLotRepository.countByParkingSpace_IdAndIsAvailableFalse(space.getId()))
@@ -177,13 +179,22 @@ public class AnalysisServiceImpl implements AnalysisService {
             ).toList();
 
             Integer totalSlot = parkingLotRepository.countFirstBy();
-            hourlyOccupancyResponses = getHour().stream().map(
+            hourlyOccupancyResponses = getLastestHour(11).stream().map(
                     hour -> HourlyOccupancyResponse.builder()
                             .hour(formatHour(hour))
                             .occupied(parkingLotDetailRepository.countByTimeInBetween(hour, hour.plusHours(1)))
                             .total(totalSlot)
                             .build()
             ).toList();
+
+            hourlyVehicleExitResponse = getLastestHour(11).stream().map(
+                    hour -> HourlyVehicleExitResponse.builder()
+                            .hour(formatHour(hour))
+                            .occupied(parkingLotDetailRepository.countByIsCheckOutTrueAndTimeOutBetween(hour, hour.plusHours(1)))
+                            .total(totalSlot)
+                            .build()
+            ).toList();
+
 
             weeklyOccupancyResponses = getDays().stream().map(
                     day -> {
@@ -226,10 +237,18 @@ public class AnalysisServiceImpl implements AnalysisService {
             }
 
             Integer totalSlot = parkingLotRepository.countByParkingSpace_Site_UuidIn(sites);
-            hourlyOccupancyResponses = getHour().stream().map(
+            hourlyOccupancyResponses = getLastestHour(11).stream().map(
                     hour -> HourlyOccupancyResponse.builder()
                             .hour(formatHour(hour))
                             .occupied(parkingLotDetailRepository.countByTimeInBetweenAndSite_UuidIn(hour, hour.plusHours(1), sites))
+                            .total(totalSlot)
+                            .build()
+            ).toList();
+
+            hourlyVehicleExitResponse = getLastestHour(11).stream().map(
+                    hour -> HourlyVehicleExitResponse.builder()
+                            .hour(formatHour(hour))
+                            .occupied(parkingLotDetailRepository.countByIsCheckOutTrueAndTimeOutBetweenAndSite_UuidIn(hour, hour.plusHours(1), sites))
                             .total(totalSlot)
                             .build()
             ).toList();
@@ -256,7 +275,7 @@ public class AnalysisServiceImpl implements AnalysisService {
             List<ParkingSpace> parkingSpaces = parkingSpaceRepository.findBySite_UuidIn(sites);
             parkingAreasUtilization = parkingSpaces.stream().map(space -> ParkingAreasUtilizationResponse.builder()
                     .name(space.getLabel())
-                    .value(space.getLotQty())
+                    .value(parkingLotRepository.countByParkingSpace_IdAndIsAvailableFalse(space.getId()))
                     .color(ColorUtil.generateUniqueColor(space.getLabel()))
                     .build()).toList();
 
@@ -282,6 +301,7 @@ public class AnalysisServiceImpl implements AnalysisService {
                                 .build();
                     }
             ).toList();
+
         }
 
         if (isAdmin) {
@@ -299,6 +319,7 @@ public class AnalysisServiceImpl implements AnalysisService {
                     .companies(companyResponses)
                     .branchData(branchResponses)
                     .hourlyData(hourlyOccupancyResponses)
+                    .hourlyVehicleExitResponse(hourlyVehicleExitResponse)
                     .weeklyData(weeklyOccupancyResponses)
                     .build();
         }
@@ -318,6 +339,7 @@ public class AnalysisServiceImpl implements AnalysisService {
                     .parkingAreasUtilization(parkingAreasUtilization)
                     .parkingAreasDetails(parkingAreasDetails)
                     .hourlyData(hourlyOccupancyResponses)
+                    .hourlyVehicleExitResponse(hourlyVehicleExitResponse)
                     .weeklyData(weeklyOccupancyResponses)
                     .build();
         }
@@ -419,11 +441,11 @@ public class AnalysisServiceImpl implements AnalysisService {
         return days;
     }
 
-    private List<LocalDateTime> getHour() {
+    private List<LocalDateTime> getLastestHour(Integer hourCount) {
         List<LocalDateTime> hours = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
 
-        LocalDateTime currentHour = now.truncatedTo(ChronoUnit.HOURS).minusHours(11);
+        LocalDateTime currentHour = now.truncatedTo(ChronoUnit.HOURS).minusHours(hourCount);
         LocalDateTime endHour = now.truncatedTo(ChronoUnit.HOURS);
 
         // Generate 24 hours ending with the current hour
@@ -434,6 +456,38 @@ public class AnalysisServiceImpl implements AnalysisService {
         }
 
         return hours;
+    }
+
+    private List<LocalDateTime> get24Hour() {
+        List<LocalDateTime> hours = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+
+        // Start from 12 AM (midnight) of the current day
+        LocalDateTime currentHour = now.truncatedTo(ChronoUnit.DAYS); // This gives us 12 AM
+        LocalDateTime endHour = currentHour.plusHours(23); // This gives us 11 PM
+
+        // Generate 24 hours from 12 AM to 11 PM
+        while (currentHour.isBefore(endHour) || currentHour.equals(endHour)) {
+            hours.add(currentHour);
+            currentHour = currentHour.plusHours(1);
+        }
+
+        return hours;
+    }
+
+    private List<LocalDate> getDaysOfWeek() {
+        List<LocalDate> days = new ArrayList<>();
+        LocalDate now = LocalDate.now();
+
+        // Find the Monday of the current week
+        LocalDate monday = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+
+        // Generate 7 days from Monday to Sunday
+        for (int i = 0; i < 7; i++) {
+            days.add(monday.plusDays(i));
+        }
+
+        return days;
     }
 
 }

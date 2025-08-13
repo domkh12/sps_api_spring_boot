@@ -8,6 +8,7 @@ import java.util.List;
 public record BranchListResponse(
         String uuid,
         String siteName,
+        String image,
         CompanyListForParkingSpace company,
         List<ParkingNameResponse> parkingSpaces
 ) {

@@ -392,9 +392,9 @@ public class UserServiceImpl implements UserService{
             user.setRoles(roles);
             user.setPassword(passwordEncoder.encode(createUser.password()));
             user.setCreatedAt(LocalDateTime.now());
-            user.setIsAccountNonLocked(true);
-            user.setIsAccountNonExpired(true);
-            user.setIsCredentialsNonExpired(true);
+            user.setIsAccountNonLocked(false);
+            user.setIsAccountNonExpired(false);
+            user.setIsCredentialsNonExpired(false);
             user.setStatus(String.valueOf(Status.Active));
             user.setSignUpMethod(signUpMethodRepository.findByName("CUSTOM").orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sign up method not found")));
             user.setIsOnline(false);

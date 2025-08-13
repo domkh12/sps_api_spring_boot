@@ -89,6 +89,11 @@ public class VehicleServiceImpl implements VehicleService{
                 parkingLotDetailMapper.toParkingDetailResponse(savedParkingLotDetail)
         );
 
+        simpMessagingTemplate.convertAndSend(
+                "/topic/" + parkingLotDetail.getSite().getUuid() +"/check-out",
+                parkingLotDetailMapper.toParkingDetailResponse(savedParkingLotDetail)
+        );
+
         // 🔥 NEW: Send Telegram notification for check-out
         String provinceName = vehicle.getLicensePlateProvince() != null ?
                 vehicle.getLicensePlateProvince().getProvinceNameEn() : null;
@@ -99,7 +104,8 @@ public class VehicleServiceImpl implements VehicleService{
                 timeIn,
                 timeOut,
                 durations,
-                savedParkingLotDetail.getImageCheckOut()
+                savedParkingLotDetail.getImageCheckOut(),
+                parkingLotDetail.getSite().getSiteName()
         );
 
         return parkingLotDetailMapper.toParkingDetailResponse(parkingLotDetail);
@@ -366,6 +372,11 @@ public class VehicleServiceImpl implements VehicleService{
                 parkingLotDetailMapper.toParkingDetailResponse(savedParkingLotDetail)
         );
 
+        simpMessagingTemplate.convertAndSend(
+                "/topic/" + site.getUuid() +"/check-in",
+                parkingLotDetailMapper.toParkingDetailResponse(savedParkingLotDetail)
+        );
+
         // 🔥 NEW: Send Telegram notification for check-in
         Vehicle finalVehicle = vehicle.orElse(newVehicle);
         String provinceName = finalVehicle.getLicensePlateProvince() != null ?
@@ -376,7 +387,8 @@ public class VehicleServiceImpl implements VehicleService{
                 finalVehicle.getNumberPlate(),
                 provinceName,
                 checkInTime,
-                savedParkingLotDetail.getImageCheckIn()
+                savedParkingLotDetail.getImageCheckIn(),
+                site.getSiteName()
         );
 
         return parkingLotDetailMapper.toParkingDetailResponse(parkingLotDetail);
