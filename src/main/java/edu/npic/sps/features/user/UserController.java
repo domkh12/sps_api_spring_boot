@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -21,6 +23,32 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+
+    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @GetMapping("/report/excel")
+    @ResponseStatus(HttpStatus.OK)
+    ResponseEntity<InputStreamResource> reportUserXlsx() throws IOException {
+        return userService.reportUserXlsx();
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @GetMapping("/report/pdf")
+    @ResponseStatus(HttpStatus.OK)
+    ResponseEntity<InputStreamResource> reportUserPdf() throws IOException {
+        return userService.reportUserPdf();
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/report")
+    Page<ReportUserResponse> report(
+            @RequestParam(required = false, defaultValue = "1") int pageNo,
+            @RequestParam(required = false, defaultValue = "20") int pageSize,
+            @RequestParam(required = false, defaultValue = "") LocalDateTime dateFrom,
+            @RequestParam(required = false, defaultValue = "") LocalDateTime dateTo
+            ){
+        return userService.report(pageNo, pageSize, dateFrom, dateTo);
+    }
 
     @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
     @ResponseStatus(HttpStatus.OK)

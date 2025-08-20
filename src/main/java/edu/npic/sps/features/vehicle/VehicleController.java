@@ -11,11 +11,13 @@ import lombok.RequiredArgsConstructor;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.fonts.SimpleFontExtensionsRegistryFactory;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,46 +32,19 @@ public class VehicleController {
 
     private final VehicleService vehicleService;
 
-//    @GetMapping("/export/pdf")
-//    public ResponseEntity<byte[]> downloadPdf() throws Exception {
-//        // Set up font registry for JasperReports
-//        System.setProperty(
-//                "net.sf.jasperreports.extension.registry.factory.fonts",
-//                SimpleFontExtensionsRegistryFactory.class.getName()
-//        );
-//
-//        // Load JRXML and compile
-//        String reportPath = "jasper/vehicle_report.jrxml";
-//        InputStream jrxmlStream = getClass().getClassLoader().getResourceAsStream(reportPath);
-//        if (jrxmlStream == null) {
-//            throw new RuntimeException("Report template not found: " + reportPath);
-//        }
-//
-//        try {
-//            // Compile report
-//            JasperReport jasperReport = JasperCompileManager.compileReport(jrxmlStream);
-//
-//            // Parameters
-//            Map<String, Object> params = new HashMap<>();
-//            params.put("title", "របាយការណ៍យានយន្ត");
-//
-//            // Generate report
-//            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params, new JREmptyDataSource());
-//
-//            // Export to PDF
-//            byte[] pdfBytes = JasperExportManager.exportReportToPdf(jasperPrint);
-//
-//            return ResponseEntity.ok()
-//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=vehicle_report.pdf")
-//                    .contentType(MediaType.APPLICATION_PDF)
-//                    .body(pdfBytes);
-//        } catch (JRException e) {
-//            throw new RuntimeException("Error generating report: " + e.getMessage(), e);
-//        } finally {
-//            jrxmlStream.close();
-//        }
-//    }
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @GetMapping("/report/excel")
+    @ResponseStatus(HttpStatus.OK)
+    ResponseEntity<InputStreamResource> getVehicleReportExcel() throws IOException {
+        return vehicleService.getVehicleReportExcel();
+    }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @GetMapping("/report/pdf")
+    @ResponseStatus(HttpStatus.OK)
+    ResponseEntity<InputStreamResource> getVehicleReportPdf() throws IOException {
+        return vehicleService.getVehicleReportPdf();
+    }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @GetMapping("/report")

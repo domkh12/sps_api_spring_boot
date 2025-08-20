@@ -5,44 +5,45 @@ import edu.npic.sps.base.Status;
 import edu.npic.sps.domain.*;
 import edu.npic.sps.features.auth.EmailVerificationRepository;
 import edu.npic.sps.features.gender.GenderRepository;
+import edu.npic.sps.features.report.GenerateReportService;
 import edu.npic.sps.features.role.RoleRepository;
 import edu.npic.sps.features.signUpMethod.SignUpMethodRepository;
 import edu.npic.sps.features.site.SiteRepository;
 import edu.npic.sps.features.totp.TotpService;
 import edu.npic.sps.features.user.dto.*;
 import edu.npic.sps.mapper.UserMapper;
-import edu.npic.sps.security.CustomUserDetails;
 import edu.npic.sps.util.AuthUtil;
-import edu.npic.sps.util.RandomOtp;
-import edu.npic.sps.util.RandomUtil;
+import edu.npic.sps.util.Util;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.lang.String.format;
+import static org.springframework.http.MediaType.APPLICATION_PDF;
 
 @Service
 @RequiredArgsConstructor
@@ -62,6 +63,7 @@ public class UserServiceImpl implements UserService{
     private final GenderRepository genderRepository;
     private final TemplateEngine templateEngine;
     private final SiteRepository siteRepository;
+    private final GenerateReportService generateReportService;
 
     @Value("${file-server.server-path}")
     private String serverPath;
@@ -74,6 +76,49 @@ public class UserServiceImpl implements UserService{
 
     @Value("${spring.mail.username}")
     private String adminMail;
+
+    @Value("${user.template.path}")
+    private String userTemplate;
+
+    @Value("${user-excel.template.path}")
+    private String userExcelTemplate;
+
+
+    @Override
+    public ResponseEntity<InputStreamResource> reportUserXlsx() throws IOException {
+
+        List<User> users = userRepository.findAll();
+        File userReport = generateReportService.generateExcelReport(users, userExcelTemplate);
+        HttpHeaders httpHeaders = Util.getHttpHeaders("users",  userReport, "xlsx", MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+
+        return new ResponseEntity<>(new InputStreamResource(new FileInputStream(userReport)), httpHeaders, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<InputStreamResource> reportUserPdf() throws IOException {
+
+        List<User> users = userRepository.findAll();
+        File userReport = generateReportService.generatePDFReport(users, userTemplate);
+        HttpHeaders httpHeaders = Util.getHttpHeaders("users",  userReport, "pdf", APPLICATION_PDF);
+        return new ResponseEntity<>(new InputStreamResource(new FileInputStream(userReport)), httpHeaders, HttpStatus.OK);
+
+    }
+
+    @Override
+    public Page<ReportUserResponse> report(int pageNo, int pageSize, LocalDateTime dateFrom, LocalDateTime dateTo) {
+        boolean isManager = authUtil.isManagerLoggedUser();
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        List<String> sitesLogged = authUtil.loggedUserSites();
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
+        Page<User> users = Page.empty();
+
+        if (isAdmin){
+            users = userRepository.findAll(pageRequest);
+        }
+
+        return null;
+    }
 
     @Override
     public Optional<User> findByEmail(String email) {
@@ -89,6 +134,8 @@ public class UserServiceImpl implements UserService{
         }
         return userRepository.save(user);
     }
+
+
 
     @Override
     public List<FullNameResponse> findAllFullName() {
@@ -606,5 +653,6 @@ public class UserServiceImpl implements UserService{
 //
 //        mailSender.send(mimeMessage);
     }
+
 
 }

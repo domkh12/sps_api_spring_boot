@@ -6,9 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
@@ -40,17 +37,17 @@ public class TelegramNotificationService {
             log.info("Caption: {}", caption);
             log.info("Chat ID: {}", chatId);
 
-            // Use form data instead of JSON for sendPhoto with URL
-            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-            formData.add("chat_id", chatId);
-            formData.add("photo", imageUrl);
-            formData.add("caption", caption);
-            formData.add("parse_mode", "HTML");
-
             webClient.post()
                     .uri("/sendPhoto")
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .body(BodyInserters.fromFormData(formData))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(
+                            TelegramMessage.builder()
+                                    .chatId(chatId)
+                                    .photo(imageUrl)
+                                    .caption(caption)
+                                    .parseMode("HTML")
+                                    .build()
+                    )
                     .retrieve()
                     .bodyToMono(String.class)
                     .subscribe(
@@ -60,37 +57,10 @@ public class TelegramNotificationService {
                             },
                             error -> {
                                 log.error("Failed to send photo by URL: {}", error.getMessage());
-                                // Fallback: try sending as text message
-                                sendTextMessage(caption);
                             }
                     );
         } catch (Exception e) {
             log.error("Error sending photo by URL", e);
-            // Fallback: try sending as text message
-            sendTextMessage(caption);
-        }
-    }
-
-    // Fallback method to send text message if photo fails
-    private void sendTextMessage(String text) {
-        try {
-            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-            formData.add("chat_id", chatId);
-            formData.add("text", text);
-            formData.add("parse_mode", "HTML");
-
-            webClient.post()
-                    .uri("/sendMessage")
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .body(BodyInserters.fromFormData(formData))
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .subscribe(
-                            response -> log.info("Text message sent as fallback"),
-                            error -> log.error("Failed to send fallback text message: {}", error.getMessage())
-                    );
-        } catch (Exception e) {
-            log.error("Error sending fallback text message", e);
         }
     }
 

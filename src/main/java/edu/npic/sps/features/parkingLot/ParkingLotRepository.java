@@ -28,6 +28,13 @@ public interface ParkingLotRepository extends JpaRepository<ParkingLot, Integer>
     @Query("select count(p) from ParkingLot p where p.parkingSpace.site.uuid in ?1")
     Integer countByParkingSpace_Site_UuidIn(Collection<String> uuids);
 
+    @Query("select count(p) from ParkingLot p where p.isAvailable = false")
+    Integer countByIsAvailableFalse();
+
+    @Query("select count(p) from ParkingLot p where p.isAvailable = false and p.parkingSpace.site.uuid in ?1")
+    Integer countByIsAvailableFalseAndParkingSpace_Site_UuidIn(Collection<String> uuids);
+
+
     @Query("select count(p) from ParkingLot p where p.isAvailable = true")
     Integer countByIsAvailableTrue();
 

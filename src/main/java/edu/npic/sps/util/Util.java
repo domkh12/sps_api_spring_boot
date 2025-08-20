@@ -1,9 +1,23 @@
 package edu.npic.sps.util;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
+import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.lang.String.format;
+
 public class Util {
+
+    public static HttpHeaders getHttpHeaders(String code, File invoicePdf, String fileType, MediaType mediaType) {
+        HttpHeaders respHeaders = new HttpHeaders();
+        respHeaders.setContentType(mediaType);
+        respHeaders.setContentLength(invoicePdf.length());
+        respHeaders.setContentDispositionFormData("attachment", format("%s." + fileType, code));
+        return respHeaders;
+    }
 
     public static String getDeviceTypeName(String userAgent) {
         if (userAgent == null || userAgent.isEmpty()) {

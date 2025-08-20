@@ -4,14 +4,22 @@ import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import edu.npic.sps.domain.User;
 import edu.npic.sps.features.user.dto.*;
 import jakarta.mail.MessagingException;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
+
+    ResponseEntity<InputStreamResource> reportUserXlsx() throws IOException;
+
+    ResponseEntity<InputStreamResource> reportUserPdf() throws IOException;
+
+    Page<ReportUserResponse> report(int pageNo, int pageSize, LocalDateTime dateFrom, LocalDateTime dateTo);
 
     Optional<User> findByEmail(String email);
 

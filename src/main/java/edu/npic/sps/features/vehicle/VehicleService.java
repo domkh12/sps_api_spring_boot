@@ -7,6 +7,7 @@ import edu.npic.sps.features.vehicle.dto.VehicleRequest;
 import edu.npic.sps.features.vehicle.dto.VehicleResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public interface VehicleService {
+
+    ResponseEntity<InputStreamResource> getVehicleReportExcel() throws IOException;
+
+    ResponseEntity<InputStreamResource> getVehicleReportPdf() throws IOException;
 
     ParkingDetailResponse checkOut(@Valid CameraRequest cameraRequest);
 

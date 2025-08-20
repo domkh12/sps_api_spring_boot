@@ -84,7 +84,7 @@ public class AnalysisServiceImpl implements AnalysisService {
             totalUserCount = userRepository.countByUuidNot(userUuid);
             totalBranches = siteRepository.totalBranches();
             checkInCount = parkingLotDetailRepository.totalCheckIn();
-            activeSessionCount = parkingLotRepository.countByIsAvailableTrue();
+            activeSessionCount = parkingLotRepository.countByIsAvailableFalse();
             totalVehicleCount = vehicleRepository.totalVehicleCount();
             totalCompanies = companyRepository.totalCompanies();
             totalParkingAreasCount = parkingSpaceRepository.totalParkingAreasCount();
@@ -224,7 +224,7 @@ public class AnalysisServiceImpl implements AnalysisService {
             }
             totalUserCount = userRepository.countUserBySite(userUuid, sites);
             checkInCount = parkingLotDetailRepository.countByIsCheckInTrueAndSite_UuidIn(sites);
-            activeSessionCount = parkingLotRepository.countByIsAvailableTrueAndParkingSpace_Site_UuidIn(sites);
+            activeSessionCount = parkingLotRepository.countByIsAvailableFalseAndParkingSpace_Site_UuidIn(sites);
             totalParkingAreasCount = parkingSpaceRepository.countBySite_UuidIn(sites);
             totalParkingSlotsCount = parkingLotRepository.countByParkingSpace_Site_UuidIn(sites);
 

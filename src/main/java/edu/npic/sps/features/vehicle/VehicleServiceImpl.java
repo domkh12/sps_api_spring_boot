@@ -7,6 +7,7 @@ import edu.npic.sps.features.licensePlateProvince.LicensePlateProvinceRepository
 import edu.npic.sps.features.licensePlateType.LicensePlateTypeRepository;
 import edu.npic.sps.features.parkingLotDetail.ParkingLotDetailRepository;
 import edu.npic.sps.features.parkingLotDetail.dto.ParkingDetailResponse;
+import edu.npic.sps.features.report.GenerateReportService;
 import edu.npic.sps.features.role.RoleRepository;
 import edu.npic.sps.features.signUpMethod.SignUpMethodRepository;
 import edu.npic.sps.features.site.SiteRepository;
@@ -20,17 +21,26 @@ import edu.npic.sps.features.vehicletype.VehicleTypeRepository;
 import edu.npic.sps.mapper.ParkingLotDetailMapper;
 import edu.npic.sps.mapper.VehicleMapper;
 import edu.npic.sps.util.AuthUtil;
+import edu.npic.sps.util.Util;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -58,7 +68,33 @@ public class VehicleServiceImpl implements VehicleService{
     private final SignUpMethodRepository signUpMethodRepository;
     private final RoleRepository roleRepository;
     private final TelegramNotificationService telegramNotificationService;
+    private final GenerateReportService generateReportService;
 
+    @Value("${vehicle.template.path}")
+    String templatePath;
+
+    @Value("${vehicle-excel.template.path}")
+    String excelTemplatePath;
+
+    @Override
+    public ResponseEntity<InputStreamResource> getVehicleReportExcel() throws IOException {
+
+        List<Vehicle> vehicles = vehicleRepository.findAll();
+        File file = generateReportService.generateExcelReport(vehicles, excelTemplatePath);
+        HttpHeaders headers = Util.getHttpHeaders("Vehicle", file, "xlsx", MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+
+        return new ResponseEntity<>(new InputStreamResource(new FileInputStream(file)), headers, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<InputStreamResource> getVehicleReportPdf() throws IOException {
+
+        List<Vehicle> vehicles = vehicleRepository.findAll();
+        File file = generateReportService.generatePDFReport(vehicles, templatePath);
+        HttpHeaders headers = Util.getHttpHeaders("Vehicle", file, "pdf", MediaType.APPLICATION_PDF);
+
+        return new ResponseEntity<>(new InputStreamResource(new FileInputStream(file)), headers, HttpStatus.OK);
+    }
 
     @Override
     public ParkingDetailResponse checkOut(CameraRequest cameraRequest) {
@@ -308,14 +344,14 @@ public class VehicleServiceImpl implements VehicleService{
             User user = new User();
 
             user.setFullName("Guest");
-            user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString().substring(0, 10)));
+            user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString().substring(0, 5)));
 
             // Assign specific email for the first user
             user.setEmail(UUID.randomUUID().toString()+"@gmail.com");
 
             user.setDateOfBirth(LocalDate.now().minusYears(20));
             user.setGender(genderRepository.findById(1).get());
-            user.setPhoneNumber(UUID.randomUUID().toString().substring(0, 10));
+            user.setPhoneNumber(UUID.randomUUID().toString().substring(0, 5));
             user.setUuid(UUID.randomUUID().toString());
             user.setCreatedAt(LocalDateTime.now());
             user.setIsVerified(false);

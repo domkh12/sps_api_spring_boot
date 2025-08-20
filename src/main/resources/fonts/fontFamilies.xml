@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<fontFamilies>
+
+    <fontFamily name="khmerMEF2">
+        <normal><![CDATA[fonts/khmerMEF2/KHMERMEF2.ttf]]></normal>
+        <pdfEncoding><![CDATA[Identity-H]]></pdfEncoding>
+        <pdfEmbedded><![CDATA[true]]></pdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="tacteng">
+        <normal><![CDATA[fonts/tacteng/TACTENG.TTF]]></normal>
+        <pdfEncoding><![CDATA[Identity-H]]></pdfEncoding>
+        <pdfEmbedded><![CDATA[true]]></pdfEmbedded>
+    </fontFamily>
+
+    <fontFamily name="khmerOSBattambang">
+        <normal><![CDATA[fonts/khmerOSBattambang/KhmerOSbattambang.ttf]]></normal>
+        <pdfEncoding><![CDATA[Identity-H]]></pdfEncoding>
+        <pdfEmbedded><![CDATA[true]]></pdfEmbedded>
+    </fontFamily>
+
+
+</fontFamilies>

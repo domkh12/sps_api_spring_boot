@@ -58,7 +58,7 @@ public class RoleServiceImpl implements RoleService{
     @Override
     public List<RoleResponse> findAll() {
 
-        List<Role> roles = roleRepository.findAll();
+        List<Role> roles = roleRepository.findByNameNotIgnoreCase("USER");
 
         return roles.stream().map(roleMapper::toRoleResponse).toList();
     }
