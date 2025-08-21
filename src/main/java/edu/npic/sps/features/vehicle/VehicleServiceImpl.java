@@ -77,9 +77,27 @@ public class VehicleServiceImpl implements VehicleService{
     String excelTemplatePath;
 
     @Override
-    public ResponseEntity<InputStreamResource> getVehicleReportExcel() throws IOException {
+    public ResponseEntity<InputStreamResource> getVehicleReportExcel(LocalDateTime dateFrom, LocalDateTime dateTo) throws IOException {
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        boolean isManager = authUtil.isManagerLoggedUser();
+        List<String> siteUuid = authUtil.loggedUserSites();
+        List<Vehicle> vehicles = new ArrayList<>();
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
 
-        List<Vehicle> vehicles = vehicleRepository.findAll();
+        if (dateFrom != null || dateTo != null){
+            if (isAdmin){
+                vehicles = vehicleRepository.findByCreatedAtBetweenOrderByIdDesc(dateFrom, dateTo, sort);
+            }else if (isManager){
+                vehicles = vehicleRepository.findByCreatedAtBetweenAndSites_UuidInOrderByIdDesc(dateFrom, dateTo, siteUuid, sort);
+            }
+        }else {
+            if (isAdmin){
+                vehicles = vehicleRepository.findAll(sort);
+            }else if (isManager){
+                vehicles = vehicleRepository.findBySites_UuidInOrderByIdDesc(siteUuid, sort);
+            }
+        }
+
         File file = generateReportService.generateExcelReport(vehicles, excelTemplatePath);
         HttpHeaders headers = Util.getHttpHeaders("Vehicle", file, "xlsx", MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
 
@@ -87,9 +105,27 @@ public class VehicleServiceImpl implements VehicleService{
     }
 
     @Override
-    public ResponseEntity<InputStreamResource> getVehicleReportPdf() throws IOException {
+    public ResponseEntity<InputStreamResource> getVehicleReportPdf(LocalDateTime dateFrom, LocalDateTime dateTo) throws IOException {
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        boolean isManager = authUtil.isManagerLoggedUser();
+        List<String> siteUuid = authUtil.loggedUserSites();
+        List<Vehicle> vehicles = new ArrayList<>();
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
 
-        List<Vehicle> vehicles = vehicleRepository.findAll();
+        if (dateFrom != null || dateTo != null){
+            if (isAdmin){
+                vehicles = vehicleRepository.findByCreatedAtBetweenOrderByIdDesc(dateFrom, dateTo, sort);
+            }else if (isManager){
+                vehicles = vehicleRepository.findByCreatedAtBetweenAndSites_UuidInOrderByIdDesc(dateFrom, dateTo, siteUuid, sort);
+            }
+        }else {
+            if (isAdmin){
+                vehicles = vehicleRepository.findAll(sort);
+            }else if (isManager){
+                vehicles = vehicleRepository.findBySites_UuidInOrderByIdDesc(siteUuid, sort);
+            }
+        }
+
         File file = generateReportService.generatePDFReport(vehicles, templatePath);
         HttpHeaders headers = Util.getHttpHeaders("Vehicle", file, "pdf", MediaType.APPLICATION_PDF);
 
@@ -308,6 +344,10 @@ public class VehicleServiceImpl implements VehicleService{
 
     @Override
     public Page<VehicleResponse> getVehicleReport(int pageNo, int pageSize, LocalDateTime dateFrom, LocalDateTime dateTo) {
+        boolean isManager = authUtil.isManagerLoggedUser();
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        List<String> siteUuid = authUtil.loggedUserSites();
+
         if (pageNo < 1 || pageSize < 1){
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -318,10 +358,19 @@ public class VehicleServiceImpl implements VehicleService{
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
         Page<Vehicle> vehicles = Page.empty();
-
-        vehicles = vehicleRepository.findByCreatedAtBetween(
-                dateFrom,
-                dateTo, pageRequest);
+        if (dateFrom != null && dateTo != null){
+            if (isAdmin){
+                vehicles = vehicleRepository.findByCreatedAtBetween(dateFrom, dateTo, pageRequest);
+            }else if (isManager){
+                vehicles = vehicleRepository.findByCreatedAtBetweenAndSites_UuidIn(dateFrom, dateTo, siteUuid, pageRequest);
+            }
+        }else {
+            if (isAdmin){
+                vehicles = vehicleRepository.findAll(pageRequest);
+            }else if (isManager){
+                vehicles = vehicleRepository.findVehicleBySites_UuidIn(siteUuid, pageRequest);
+            }
+        }
 
         return vehicles.map(vehicleMapper::toVehicleResponse);
 

@@ -48,7 +48,7 @@ import static org.springframework.http.MediaType.APPLICATION_PDF;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -85,21 +85,57 @@ public class UserServiceImpl implements UserService{
 
 
     @Override
-    public ResponseEntity<InputStreamResource> reportUserXlsx() throws IOException {
+    public ResponseEntity<InputStreamResource> reportUserXlsx(LocalDateTime dateFrom, LocalDateTime dateTo) throws IOException {
+        boolean isManager = authUtil.isManagerLoggedUser();
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        List<String> sitesLogged = authUtil.loggedUserSites();
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        List<User> users = new ArrayList<>();
 
-        List<User> users = userRepository.findAll();
+        if (dateFrom != null && dateTo != null) {
+            if (isAdmin) {
+                users = userRepository.findByCreatedAtBetweenOrderByIdDesc(dateFrom, dateTo, sort);
+            } else if (isManager) {
+                users = userRepository.findByCreatedAtBetweenAndSites_UuidInAndRoles_NameOrderByIdDesc(dateFrom, dateTo, sitesLogged, "USER", sort);
+            }
+        } else {
+            if (isAdmin) {
+                users = userRepository.findAll(sort);
+            } else if (isManager) {
+                users = userRepository.findBySites_UuidInAndRoles_NameOrderByIdDesc(sitesLogged, "USER", sort);
+            }
+        }
+
         File userReport = generateReportService.generateExcelReport(users, userExcelTemplate);
-        HttpHeaders httpHeaders = Util.getHttpHeaders("users",  userReport, "xlsx", MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        HttpHeaders httpHeaders = Util.getHttpHeaders("users", userReport, "xlsx", MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
 
         return new ResponseEntity<>(new InputStreamResource(new FileInputStream(userReport)), httpHeaders, HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<InputStreamResource> reportUserPdf() throws IOException {
+    public ResponseEntity<InputStreamResource> reportUserPdf(LocalDateTime dateFrom, LocalDateTime dateTo) throws IOException {
+        boolean isManager = authUtil.isManagerLoggedUser();
+        boolean isAdmin = authUtil.isAdminLoggedUser();
+        List<String> sitesLogged = authUtil.loggedUserSites();
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        List<User> users = new ArrayList<>();
 
-        List<User> users = userRepository.findAll();
+        if (dateFrom != null && dateTo != null) {
+            if (isAdmin) {
+                users = userRepository.findByCreatedAtBetweenOrderByIdDesc(dateFrom, dateTo, sort);
+            } else if (isManager) {
+                users = userRepository.findByCreatedAtBetweenAndSites_UuidInAndRoles_NameOrderByIdDesc(dateFrom, dateTo, sitesLogged, "USER", sort);
+            }
+        } else {
+            if (isAdmin) {
+                users = userRepository.findAll(sort);
+            } else if (isManager) {
+                users = userRepository.findBySites_UuidInAndRoles_NameOrderByIdDesc(sitesLogged, "USER", sort);
+            }
+        }
+
         File userReport = generateReportService.generatePDFReport(users, userTemplate);
-        HttpHeaders httpHeaders = Util.getHttpHeaders("users",  userReport, "pdf", APPLICATION_PDF);
+        HttpHeaders httpHeaders = Util.getHttpHeaders("users", userReport, "pdf", APPLICATION_PDF);
         return new ResponseEntity<>(new InputStreamResource(new FileInputStream(userReport)), httpHeaders, HttpStatus.OK);
 
     }
@@ -113,11 +149,22 @@ public class UserServiceImpl implements UserService{
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
         Page<User> users = Page.empty();
 
-        if (isAdmin){
-            users = userRepository.findAll(pageRequest);
+        if (dateFrom != null && dateTo != null) {
+            if (isAdmin) {
+                users = userRepository.findByCreatedAtBetween(dateFrom, dateTo, pageRequest);
+            } else if (isManager) {
+                users = userRepository.findByCreatedAtBetweenAndSites_UuidInAndRoles_Name(dateFrom, dateTo, sitesLogged, "USER", pageRequest);
+            }
+        } else {
+            if (isAdmin) {
+                users = userRepository.findAll(pageRequest);
+            } else if (isManager) {
+                users = userRepository.findBySites_UuidInAndRoles_Name(sitesLogged, "USER", pageRequest);
+            }
         }
 
-        return null;
+
+        return users.map(userMapper::toReportUserResponse);
     }
 
     @Override
@@ -127,14 +174,13 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public User registerUser(User user) {
-        if (user.getPassword() != null){
+        if (user.getPassword() != null) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
-        }else {
+        } else {
             user.setPassword(passwordEncoder.encode(RandomStringUtils.randomAlphanumeric(12)));
         }
         return userRepository.save(user);
     }
-
 
 
     @Override
@@ -142,15 +188,15 @@ public class UserServiceImpl implements UserService{
 
         String loggedUserUuid = authUtil.loggedUserUuid();
         boolean isManager = authUtil.isManagerLoggedUser();
-        boolean isAdmin =  authUtil.isAdminLoggedUser();
+        boolean isAdmin = authUtil.isAdminLoggedUser();
         List<String> verifiedUuid = authUtil.loggedUserSites();
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         List<User> user = new ArrayList<>();
 
         if (isAdmin) {
             user = userRepository.findAll(sort);
-        }else if(isManager) {
-            user = userRepository.findAllFullNameBySite(loggedUserUuid ,verifiedUuid.stream().findFirst().orElseThrow());
+        } else if (isManager) {
+            user = userRepository.findAllFullNameBySite(loggedUserUuid, verifiedUuid.stream().findFirst().orElseThrow());
         }
 
         return userMapper.toFullNameResponse(user);
@@ -185,7 +231,7 @@ public class UserServiceImpl implements UserService{
     public UserDetailResponse findByUuid(String uuid) {
 
         User user = userRepository.findByUuid(uuid).orElseThrow(
-                ()->new ResponseStatusException(HttpStatus.NOT_FOUND,
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "User not found")
         );
 
@@ -212,7 +258,7 @@ public class UserServiceImpl implements UserService{
     public Page<UserDetailResponse> search(String keyword, String roleId, String status, String signUpMethodId, int pageNo, int pageSize, String branchId) {
         String loggedUserUuid = authUtil.loggedUserUuid();
         boolean isManager = authUtil.isManagerLoggedUser();
-        boolean isAdmin =  authUtil.isAdminLoggedUser();
+        boolean isAdmin = authUtil.isAdminLoggedUser();
         List<String> siteUuid = authUtil.loggedUserSites();
 
         if (pageNo < 1 || pageSize < 1) {
@@ -223,21 +269,21 @@ public class UserServiceImpl implements UserService{
         }
 
         List<String> roleIds = null;
-        if(roleId!=null && !roleId.isEmpty()){
+        if (roleId != null && !roleId.isEmpty()) {
             roleIds = Arrays.stream(roleId.split(","))
                     .map(String::trim)
                     .toList();
         }
 
         List<String> signUpMethodIds = null;
-        if(signUpMethodId!=null && !signUpMethodId.isEmpty()){
+        if (signUpMethodId != null && !signUpMethodId.isEmpty()) {
             signUpMethodIds = Arrays.stream(signUpMethodId.split(","))
                     .map(String::trim)
                     .toList();
         }
 
         List<String> branchIds = null;
-        if(branchId!=null && !branchId.isEmpty()){
+        if (branchId != null && !branchId.isEmpty()) {
             branchIds = Arrays.stream(branchId.split(","))
                     .map(String::trim)
                     .toList();
@@ -247,10 +293,9 @@ public class UserServiceImpl implements UserService{
         PageRequest pageRequest = PageRequest.of(pageNo - 1, pageSize, sort);
         Page<User> users = Page.empty();
 
-        if (isAdmin){
+        if (isAdmin) {
             users = userRepository.findUserByFilter(loggedUserUuid, keyword, roleIds, signUpMethodIds, status, branchIds, pageRequest);
-        }
-        else if(isManager){
+        } else if (isManager) {
             users = userRepository.filterUserByManager(loggedUserUuid, keyword, roleIds, signUpMethodIds, status, siteUuid, pageRequest);
         }
         return users.map(userMapper::toUserDetailResponse);
@@ -262,7 +307,7 @@ public class UserServiceImpl implements UserService{
         boolean isAdmin = authUtil.isAdminLoggedUser();
         List<String> sitesLogged = authUtil.loggedUserSites();
 
-        if (isAdmin){
+        if (isAdmin) {
             User user = userRepository.findByUuid(uuid).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
             );
@@ -292,7 +337,7 @@ public class UserServiceImpl implements UserService{
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Phone number already exists");
         }
 
-        if(isAdmin){
+        if (isAdmin) {
             if (updateUserRequest.profileImage() != null) {
                 deleteImageFile(user.getProfileImage());
             } else if (updateUserRequest.bannerImage() != null) {
@@ -308,7 +353,7 @@ public class UserServiceImpl implements UserService{
                 // Get the user's existing roles (if any)
                 List<Role> existingRoles = user.getRoles();
 
-                if(existingRoles != null) {
+                if (existingRoles != null) {
                     //Update the existing collection of roles
                     existingRoles.clear();
                     existingRoles.addAll(newRoles);
@@ -332,7 +377,7 @@ public class UserServiceImpl implements UserService{
                         ).toList();
 
                 List<Site> existingSites = user.getSites();
-                if(existingSites != null) {
+                if (existingSites != null) {
                     existingSites.clear();
                     existingSites.addAll(newSites);
                 } else {
@@ -340,22 +385,22 @@ public class UserServiceImpl implements UserService{
                 }
             }
 
-            if (updateUserRequest.isDeleted() != null){
-                if (!updateUserRequest.isDeleted()){
+            if (updateUserRequest.isDeleted() != null) {
+                if (!updateUserRequest.isDeleted()) {
                     user.setStatus(String.valueOf(Status.Active));
 
-                }else{
+                } else {
                     user.setStatus(String.valueOf(Status.Banned));
                 }
             }
 
-            if (updateUserRequest.isVerified() != null){
-                if (!updateUserRequest.isVerified()){
+            if (updateUserRequest.isVerified() != null) {
+                if (!updateUserRequest.isVerified()) {
                     user.setStatus(String.valueOf(Status.Pending));
 
-                    if (emailVerificationRepository.existsByUser(user)){
+                    if (emailVerificationRepository.existsByUser(user)) {
                         throw new ResponseStatusException(HttpStatus.CONFLICT, "User not verify yet!");
-                    }else {
+                    } else {
                         sendEmailVerification(user, 15);
                     }
                 }
@@ -374,56 +419,56 @@ public class UserServiceImpl implements UserService{
         boolean isAdmin = authUtil.isAdminLoggedUser();
         List<String> sitesLogged = authUtil.loggedUserSites();
 
-        if ( userRepository.existsByEmail(createUser.email())){
+        if (userRepository.existsByEmail(createUser.email())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
 
-        if (userRepository.existsByPhoneNumber(createUser.phoneNumber())){
+        if (userRepository.existsByPhoneNumber(createUser.phoneNumber())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Phone number already exists");
         }
 
-        if (!createUser.password().equals(createUser.confirmPassword())){
+        if (!createUser.password().equals(createUser.confirmPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password does not match");
         }
 
-        if (isAdmin){
+        if (isAdmin) {
 
-        Gender gender = genderRepository.findByUuid(createUser.genderId()).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Gender not found")
-        );
+            Gender gender = genderRepository.findByUuid(createUser.genderId()).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Gender not found")
+            );
 
-        List<Site> sites = createUser.branchId().stream().map(uuid -> siteRepository.findByUuid(uuid).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found!")
-        )).toList();
+            List<Site> sites = createUser.branchId().stream().map(uuid -> siteRepository.findByUuid(uuid).orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found!")
+            )).toList();
 
-        User user = userMapper.fromCreateUser(createUser);
+            User user = userMapper.fromCreateUser(createUser);
 
-        List<Role> roles = createUser.roleId().stream()
-                .map(roleId -> roleRepository.findByUuid(roleId)
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found!")))
-                .collect(Collectors.toList());
+            List<Role> roles = createUser.roleId().stream()
+                    .map(roleId -> roleRepository.findByUuid(roleId)
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found!")))
+                    .collect(Collectors.toList());
 
-        user.setUuid(UUID.randomUUID().toString());
-        user.setRoles(roles);
-        user.setPassword(passwordEncoder.encode(createUser.password()));
-        user.setCreatedAt(LocalDateTime.now());
-        user.setIsAccountNonLocked(true);
-        user.setIsAccountNonExpired(true);
-        user.setIsCredentialsNonExpired(true);
-        user.setStatus(String.valueOf(Status.Active));
-        user.setSignUpMethod(signUpMethodRepository.findByName("CUSTOM").orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sign up method not found")));
-        user.setIsOnline(false);
-        user.setIsTwoFactorEnabled(false);
-        user.setGender(gender);
-        user.setSites(sites);
-        user.setIsDeleted(!createUser.isVerified());
-        userRepository.save(user);
+            user.setUuid(UUID.randomUUID().toString());
+            user.setRoles(roles);
+            user.setPassword(passwordEncoder.encode(createUser.password()));
+            user.setCreatedAt(LocalDateTime.now());
+            user.setIsAccountNonLocked(true);
+            user.setIsAccountNonExpired(true);
+            user.setIsCredentialsNonExpired(true);
+            user.setStatus(String.valueOf(Status.Active));
+            user.setSignUpMethod(signUpMethodRepository.findByName("CUSTOM").orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sign up method not found")));
+            user.setIsOnline(false);
+            user.setIsTwoFactorEnabled(false);
+            user.setGender(gender);
+            user.setSites(sites);
+            user.setIsDeleted(!createUser.isVerified());
+            userRepository.save(user);
 
-        if (!createUser.isVerified()){
-            sendEmailVerification(user, 30);
-        }
+            if (!createUser.isVerified()) {
+                sendEmailVerification(user, 30);
+            }
 
-        }else if (isManager){
+        } else if (isManager) {
 
             Gender gender = genderRepository.findByUuid(createUser.genderId()).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Gender not found")
@@ -443,7 +488,7 @@ public class UserServiceImpl implements UserService{
             user.setIsAccountNonExpired(false);
             user.setIsCredentialsNonExpired(false);
             user.setStatus(String.valueOf(Status.Active));
-            user.setSignUpMethod(signUpMethodRepository.findByName("CUSTOM").orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sign up method not found")));
+            user.setSignUpMethod(signUpMethodRepository.findByName("CUSTOM").orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sign up method not found")));
             user.setIsOnline(false);
             user.setIsTwoFactorEnabled(false);
             user.setGender(gender);
@@ -451,7 +496,7 @@ public class UserServiceImpl implements UserService{
             user.setIsDeleted(!createUser.isVerified());
             userRepository.save(user);
 
-            if (!createUser.isVerified()){
+            if (!createUser.isVerified()) {
 //                EmailVerification emailVerification = new EmailVerification();
 //                emailVerification.setEmail(user.getEmail());
 //                emailVerification.setExpiryTime(LocalTime.now().plusMinutes(1));
@@ -483,7 +528,7 @@ public class UserServiceImpl implements UserService{
     public GetAllUserResponse findAll(int pageNo, int pageSize) {
         String loggedUserUuid = authUtil.loggedUserUuid();
         boolean isManager = authUtil.isManagerLoggedUser();
-        boolean isAdmin =  authUtil.isAdminLoggedUser();
+        boolean isAdmin = authUtil.isAdminLoggedUser();
         List<String> sites = authUtil.loggedUserSites();
 
         if (pageNo < 1 || pageSize < 1) {
@@ -498,24 +543,23 @@ public class UserServiceImpl implements UserService{
         Page<User> users = Page.empty();
         Map<String, Integer> statusCount = new HashMap<>();
 
-            if (isAdmin){
-                    users = userRepository.findByUuidNot(loggedUserUuid, pageRequest);
-                    statusCount.put("Active", userRepository.countActiveUser(loggedUserUuid));
-                    statusCount.put("Pending", userRepository.countPendingUser());
-                    statusCount.put("Banned", userRepository.countBannedUser());
-            }
-            else if(isManager){
-                    users = userRepository.findUserByRoleManager(
-                            loggedUserUuid ,
-                            sites.stream().findFirst().orElseThrow(),
-                            pageRequest);
-                statusCount.put("Active", userRepository.countActiveUserBySite(loggedUserUuid, sites.stream().findFirst().orElseThrow()));
-                statusCount.put("Pending", userRepository.countPendingUserBySite(sites.stream().findFirst().orElseThrow()));
-                statusCount.put("Banned", userRepository.countBannedUserBySite(sites.stream().findFirst().orElseThrow()));
-            }
+        if (isAdmin) {
+            users = userRepository.findByUuidNot(loggedUserUuid, pageRequest);
+            statusCount.put("Active", userRepository.countActiveUser(loggedUserUuid));
+            statusCount.put("Pending", userRepository.countPendingUser());
+            statusCount.put("Banned", userRepository.countBannedUser());
+        } else if (isManager) {
+            users = userRepository.findUserByRoleManager(
+                    loggedUserUuid,
+                    sites.stream().findFirst().orElseThrow(),
+                    pageRequest);
+            statusCount.put("Active", userRepository.countActiveUserBySite(loggedUserUuid, sites.stream().findFirst().orElseThrow()));
+            statusCount.put("Pending", userRepository.countPendingUserBySite(sites.stream().findFirst().orElseThrow()));
+            statusCount.put("Banned", userRepository.countBannedUserBySite(sites.stream().findFirst().orElseThrow()));
+        }
 
 
-        Page<UserDetailResponse> userDetailResponses= users.map(userMapper::toUserDetailResponse);
+        Page<UserDetailResponse> userDetailResponses = users.map(userMapper::toUserDetailResponse);
         return GetAllUserResponse.builder()
                 .allUsers(userDetailResponses)
                 .statusCount(statusCount)
@@ -525,14 +569,14 @@ public class UserServiceImpl implements UserService{
     @Override
     public void register(CreateUserRegister createUserRegister) {
 
-        if (userRepository.existsByEmail(createUserRegister.email())){
+        if (userRepository.existsByEmail(createUserRegister.email())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Email already exists!"
             );
         }
 
-        if (!createUserRegister.password().equals(createUserRegister.confirmPassword())){
+        if (!createUserRegister.password().equals(createUserRegister.confirmPassword())) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Passwords and confirm passwords do not match!"
@@ -557,9 +601,9 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public GoogleAuthenticatorKey generate2FASecret(Integer userId){
+    public GoogleAuthenticatorKey generate2FASecret(Integer userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                ()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
         );
         GoogleAuthenticatorKey key = totpService.generateSecret();
         user.setTwoFactorSecret(key.getKey());
@@ -568,26 +612,26 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public boolean validate2FACode(Integer userId, int code){
+    public boolean validate2FACode(Integer userId, int code) {
         User user = userRepository.findById(userId).orElseThrow(
-                ()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
         );
         return totpService.verifyCode(user.getTwoFactorSecret(), code);
     }
 
     @Override
-    public void enable2FA(Integer userId){
+    public void enable2FA(Integer userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                ()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
         );
         user.setIsTwoFactorEnabled(true);
         userRepository.save(user);
     }
 
     @Override
-    public void disable2FA(Integer userId){
+    public void disable2FA(Integer userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                ()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
         );
         user.setIsTwoFactorEnabled(false);
         userRepository.save(user);
@@ -596,16 +640,16 @@ public class UserServiceImpl implements UserService{
     @Override
     public User getUserById(Integer userId) {
         return userRepository.findById(userId).orElseThrow(
-                ()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!")
         );
     }
 
     @Override
     public ResponseEntity<?> find2faStatus() {
         User user = authUtil.loggedUser();
-        if(user != null){
+        if (user != null) {
             return ResponseEntity.ok().body(Map.of("is2faEnabled", user.getIsTwoFactorEnabled()));
-        }else {
+        } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!");
         }
     }
@@ -613,9 +657,9 @@ public class UserServiceImpl implements UserService{
     @Override
     public ResponseEntity<?> find2faSecretCode() {
         User user = authUtil.loggedUser();
-        if(user != null){
+        if (user != null) {
             return ResponseEntity.ok().body(Map.of("twoFASecretCode", user.getTwoFactorSecret()));
-        }else {
+        } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!");
         }
     }

@@ -18,9 +18,9 @@ import java.time.LocalDateTime;
 
 public interface VehicleService {
 
-    ResponseEntity<InputStreamResource> getVehicleReportExcel() throws IOException;
+    ResponseEntity<InputStreamResource> getVehicleReportExcel(LocalDateTime dateFrom, LocalDateTime dateTo) throws IOException;
 
-    ResponseEntity<InputStreamResource> getVehicleReportPdf() throws IOException;
+    ResponseEntity<InputStreamResource> getVehicleReportPdf(LocalDateTime dateFrom, LocalDateTime dateTo) throws IOException;
 
     ParkingDetailResponse checkOut(@Valid CameraRequest cameraRequest);
 

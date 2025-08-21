@@ -9,6 +9,8 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
+   ReportUserResponse toReportUserResponse(User user);
+
    void fromUpdateProfileUserRequest(UpdateProfileUserRequest updateProfileUserRequest, @MappingTarget User user);
 
    List<FullNameResponse> toFullNameResponse(List<User> users);

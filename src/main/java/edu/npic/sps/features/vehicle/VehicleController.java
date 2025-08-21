@@ -8,9 +8,6 @@ import edu.npic.sps.features.vehicle.dto.VehicleResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import net.sf.jasperreports.engine.*;
-import net.sf.jasperreports.engine.fonts.SimpleFontExtensionsRegistryFactory;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.*;
@@ -18,11 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,15 +28,21 @@ public class VehicleController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @GetMapping("/report/excel")
     @ResponseStatus(HttpStatus.OK)
-    ResponseEntity<InputStreamResource> getVehicleReportExcel() throws IOException {
-        return vehicleService.getVehicleReportExcel();
+    ResponseEntity<InputStreamResource> getVehicleReportExcel(
+            @RequestParam(required = false, defaultValue = "") LocalDateTime dateFrom,
+            @RequestParam(required = false, defaultValue = "") LocalDateTime dateTo
+    ) throws IOException {
+        return vehicleService.getVehicleReportExcel(dateFrom, dateTo);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @GetMapping("/report/pdf")
     @ResponseStatus(HttpStatus.OK)
-    ResponseEntity<InputStreamResource> getVehicleReportPdf() throws IOException {
-        return vehicleService.getVehicleReportPdf();
+    ResponseEntity<InputStreamResource> getVehicleReportPdf(
+            @RequestParam(required = false, defaultValue = "") LocalDateTime dateFrom,
+            @RequestParam(required = false, defaultValue = "") LocalDateTime dateTo
+    ) throws IOException {
+        return vehicleService.getVehicleReportPdf(dateFrom, dateTo);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
@@ -51,8 +50,8 @@ public class VehicleController {
     @ResponseStatus(HttpStatus.OK)
     Page<VehicleResponse> getVehicleReport(@RequestParam(required = false, defaultValue = "1") int pageNo,
                                            @RequestParam(required = false, defaultValue = "20") int pageSize,
-                                           @RequestParam LocalDateTime dateFrom,
-                                           @RequestParam LocalDateTime dateTo
+                                           @RequestParam(required = false, defaultValue = "") LocalDateTime dateFrom,
+                                           @RequestParam(required = false, defaultValue = "") LocalDateTime dateTo
                                            ){
         return vehicleService.getVehicleReport(pageNo, pageSize, dateFrom, dateTo);
     }

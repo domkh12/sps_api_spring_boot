@@ -27,15 +27,21 @@ public class UserController {
     @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
     @GetMapping("/report/excel")
     @ResponseStatus(HttpStatus.OK)
-    ResponseEntity<InputStreamResource> reportUserXlsx() throws IOException {
-        return userService.reportUserXlsx();
+    ResponseEntity<InputStreamResource> reportUserXlsx(
+            @RequestParam(required = false, defaultValue = "") LocalDateTime dateFrom,
+            @RequestParam(required = false, defaultValue = "") LocalDateTime dateTo
+    ) throws IOException {
+        return userService.reportUserXlsx(dateFrom, dateTo);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")
     @GetMapping("/report/pdf")
     @ResponseStatus(HttpStatus.OK)
-    ResponseEntity<InputStreamResource> reportUserPdf() throws IOException {
-        return userService.reportUserPdf();
+    ResponseEntity<InputStreamResource> reportUserPdf(
+            @RequestParam(required = false, defaultValue = "") LocalDateTime dateFrom,
+            @RequestParam(required = false, defaultValue = "") LocalDateTime dateTo
+    ) throws IOException {
+        return userService.reportUserPdf(dateFrom, dateTo);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_MANAGER', 'ROLE_ADMIN')")

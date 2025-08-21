@@ -15,9 +15,9 @@ import java.util.Optional;
 
 public interface UserService {
 
-    ResponseEntity<InputStreamResource> reportUserXlsx() throws IOException;
+    ResponseEntity<InputStreamResource> reportUserXlsx(LocalDateTime dateFrom, LocalDateTime dateTo) throws IOException;
 
-    ResponseEntity<InputStreamResource> reportUserPdf() throws IOException;
+    ResponseEntity<InputStreamResource> reportUserPdf(LocalDateTime dateFrom, LocalDateTime dateTo) throws IOException;
 
     Page<ReportUserResponse> report(int pageNo, int pageSize, LocalDateTime dateFrom, LocalDateTime dateTo);
 

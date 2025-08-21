@@ -3,10 +3,7 @@ package edu.npic.sps.features.user;
 import edu.npic.sps.base.Status;
 import edu.npic.sps.domain.Role;
 import edu.npic.sps.domain.User;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,11 +17,56 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
+
+    @Query("""
+            select u from User u inner join u.sites sites inner join u.roles roles
+            where sites.uuid in ?1 and roles.name = ?2
+            order by u.id DESC""")
+    List<User> findBySites_UuidInAndRoles_NameOrderByIdDesc(Collection<String> uuids, String name, Sort sort);
+
+    @Query("""
+            select u from User u inner join u.sites sites inner join u.roles roles
+            where u.createdAt between ?1 and ?2 and sites.uuid in ?3 and roles.name = ?4
+            order by u.id DESC""")
+    List<User> findByCreatedAtBetweenAndSites_UuidInAndRoles_NameOrderByIdDesc(LocalDateTime createdAtStart, LocalDateTime createdAtEnd, Collection<String> uuids, String name, Sort sort);
+
+    @Query("""
+            select u from User u inner join u.sites sites inner join u.roles roles
+            where sites.uuid in ?1 and roles.name = ?2""")
+    Page<User> findBySites_UuidInAndRoles_Name(Collection<String> uuids, String name, Pageable pageable);
+
+    @Query("""
+            select u from User u inner join u.sites sites inner join u.roles roles
+            where u.createdAt between ?1 and ?2 and sites.uuid in ?3 and roles.name = ?4""")
+    Page<User> findByCreatedAtBetweenAndSites_UuidInAndRoles_Name(LocalDateTime createdAtStart, LocalDateTime createdAtEnd, Collection<String> uuids, String name, Pageable pageable);
+
+
+    @Query("select u from User u inner join u.sites sites where u.createdAt between ?1 and ?2 and sites.uuid in ?3")
+    Page<User> findByCreatedAtBetweenAndSites_UuidIn(LocalDateTime createdAtStart, LocalDateTime createdAtEnd, Collection<String> uuids, Pageable pageable);
+
+    @Query("select u from User u where u.createdAt between ?1 and ?2")
+    Page<User> findByCreatedAtBetween(LocalDateTime createdAtStart, LocalDateTime createdAtEnd, Pageable pageable);
+
+    @Query("select u from User u left join u.sites sites where sites.uuid in ?1")
+    Page<User> findBySites_UuidIn(Collection<String> uuids, Pageable pageable);
+
+    @Query("select u from User u left join u.sites sites where sites.uuid in ?1 order by u.id DESC")
+    List<User> findBySites_UuidInOrderByIdDesc(Collection<String> uuids, Sort sort);
+
+    @Query("""
+            select u from User u inner join u.sites sites
+            where u.createdAt between ?1 and ?2 and sites.uuid in ?3
+            order by u.id DESC""")
+    List<User> findByCreatedAtBetweenAndSites_UuidInOrderByIdDesc(LocalDateTime createdAtStart, LocalDateTime createdAtEnd, Collection<String> uuids, Sort sort);
+
+
+    @Query("select u from User u where u.createdAt between ?1 and ?2 order by u.id DESC")
+    List<User> findByCreatedAtBetweenOrderByIdDesc(LocalDateTime createdAtStart, LocalDateTime createdAtEnd, Sort sort);
+
     @Query("""
             select count(u) from User u inner join u.sites sites inner join u.roles roles
             where u.uuid <> ?1 and sites.uuid in ?2 and upper(roles.name) = 'USER'""")
     Integer countUserBySite(String uuid, Collection<String> uuids);
-
 
     @Query("select count(u) from User u where u.uuid <> ?1")
     Integer countByUuidNot(String uuid);
